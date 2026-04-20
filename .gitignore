@@ -121,3 +121,4 @@ coverage/
 
 .claude/
 .agents/
+node_modules

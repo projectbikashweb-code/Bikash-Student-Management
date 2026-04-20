@@ -82,3 +82,26 @@
 .print-only {
   display: none;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Login Form — Autofill Override
+   Scoped to [data-form-input] so this never leaks to other parts of the app.
+   The box-shadow inset trick is the ONLY reliable cross-browser way to override
+   browser-injected autofill backgrounds without disabling autofill itself.
+───────────────────────────────────────────────────────────────────────────── */
+[data-form-input]:-webkit-autofill,
+[data-form-input]:-webkit-autofill:hover,
+[data-form-input]:-webkit-autofill:focus,
+[data-form-input]:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  /* Push browser autofill background out of view via huge inset shadow */
+  box-shadow: 0 0 0px 1000px #1e2a3a inset, 0 0 0 3px rgba(236,252,58,0.15) !important;
+  /* Delayed transition defeats color restoration on focus-out */
+  transition: background-color 9999s ease-in-out 0s !important;
+}
+
+[data-form-input]::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+}
