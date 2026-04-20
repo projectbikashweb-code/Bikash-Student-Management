@@ -56,7 +56,7 @@ export function Sidebar() {
           />
           {!collapsed && (
             <div className="min-w-0">
-              <div className="text-white font-bold text-sm leading-tight truncate">Bikash Institute</div>
+              <div className="text-white font-bold text-sm leading-tight truncate">Bikash Educational Institution</div>
               <div className="text-white/50 text-[10px] uppercase tracking-widest">Management System</div>
             </div>
           )}

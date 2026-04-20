@@ -121,7 +121,7 @@ export default function LoginPage() {
                 letterSpacing: '-0.02em',
               }}
             >
-              Bikash Institute
+              Bikash Educational Institution
             </h1>
             <p
               style={{

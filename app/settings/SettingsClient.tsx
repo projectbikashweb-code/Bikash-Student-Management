@@ -42,9 +42,9 @@ function InstituteInfo() {
       </div>
       <div className="space-y-4">
         {[
-          { label: 'Institute Name', value: 'Bikash Institute', disabled: true },
+          { label: 'Institute Name', value: 'Bikash Educational Institution', disabled: true },
           { label: 'Address', value: 'Bargarh, Odisha' },
-          { label: 'Phone', value: '+91 9000000000' },
+          { label: 'Phone', value: '+9182492 97170' },
           { label: 'Email', value: 'admin@bikashinstitute.com' },
           { label: 'Default Monthly Fee (₹)', value: '1500' },
           { label: 'Default Due Date (day of month)', value: '10' },

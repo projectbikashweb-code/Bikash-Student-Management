@@ -23,8 +23,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Bikash Institute - Management System',
-  description: 'Student management system for Bikash Institute',
+  title: 'Bikash Educational Institution - Management System',
+  description: 'Student management system for Bikash Educational Institution',
 }
 
 export default function RootLayout({

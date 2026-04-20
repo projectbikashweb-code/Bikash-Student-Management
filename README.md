@@ -1,6 +1,6 @@
-# Bikash Institute — Student Management System
+# Bikash Educational Institution — Student Management System
 
-A production-grade, full-stack web application for managing students, fees, invoices, and payments at Bikash Institute.
+A production-grade, full-stack web application for managing students, fees, invoices, and payments at Bikash Educational Institution.
 
 ---
 
@@ -136,7 +136,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Invoice PDF
 
 Invoices generate a professional PDF with:
-- Institute letterhead (Bikash Institute, address, contact)
+- Institute letterhead (Bikash Educational Institution, address, contact)
 - Auto-incremented invoice number: `BI-YYYY-XXXX`
 - Student details, line items, totals, balance due
 - Color-coded payment status
@@ -193,4 +193,4 @@ pm2 start npm --name "bikash-institute" -- start
 
 ## License
 
-Private — Bikash Institute internal use only.
+Private — Bikash Educational Institution internal use only.

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { RouteContext } from '@/types/route-context'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { paymentSchema } from '@/lib/validations'
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: RouteContext<{ id: string }>) {
+  const { id } = await context.params
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -12,7 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const parsed = paymentSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
 
-  const feeRecord = await prisma.feeRecord.findUnique({ where: { id: params.id } })
+  const feeRecord = await prisma.feeRecord.findUnique({ where: { id } })
   if (!feeRecord) return NextResponse.json({ error: 'Fee record not found' }, { status: 404 })
 
   const newPaidAmount = Number(feeRecord.paidAmount) + parsed.data.amountPaid
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const [payment, updatedFee] = await prisma.$transaction([
     prisma.paymentHistory.create({
       data: {
-        feeRecordId: params.id,
+        feeRecordId: id,
         studentId: feeRecord.studentId,
         amountPaid: parsed.data.amountPaid,
         paymentDate: new Date(parsed.data.paymentDate),
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       },
     }),
     prisma.feeRecord.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         paidAmount: newPaidAmount,
         status: newStatus as any,

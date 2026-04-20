@@ -66,11 +66,11 @@ export function InvoicePreview({ invoice, onClose }: InvoicePreviewProps) {
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(20)
       doc.setFont('helvetica', 'bold')
-      doc.text('BIKASH INSTITUTE', marginLeft + 24, 18)
+      doc.text('Bikash Educational Institution', marginLeft + 24, 18)
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
       doc.text('Management System', marginLeft + 24, 24)
-      doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +91 9000000000', marginLeft + 24, 30)
+      doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +9182492 97170', marginLeft + 24, 30)
 
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(14)
@@ -229,7 +229,7 @@ export function InvoicePreview({ invoice, onClose }: InvoicePreviewProps) {
       doc.setFontSize(8)
       doc.setTextColor(107, 114, 128)
       doc.text(
-        'Thank you for choosing Bikash Institute! For queries: admin@bikashinstitute.com | +91 9000000000',
+        'Thank you for choosing Bikash Educational Institution! For queries: admin@bikashinstitute.com | +9182492 97170',
         pageWidth / 2, footerY + 11, { align: 'center' }
       )
       doc.text(
@@ -253,7 +253,7 @@ export function InvoicePreview({ invoice, onClose }: InvoicePreviewProps) {
 
     const phone = invoice.student.phone.replace(/\D/g, "");
 
-    let message = `Invoice from Bikash Institute\n\n`;
+    let message = `Invoice from Bikash Educational Institution\n\n`;
     message += `Name: ${invoice.student.name}\n`;
     message += `Amount: Rs. ${invoice.totalAmount}\n`;
     message += `Status: ${invoice.feeRecord?.status || 'N/A'}\n\n`;
@@ -306,9 +306,9 @@ export function InvoicePreview({ invoice, onClose }: InvoicePreviewProps) {
                 }}
               />
               <div>
-                <h1 className="text-xl font-bold text-gray-900" style={{ margin: 0, letterSpacing: '0.5px' }}>Bikash Institute</h1>
+                <h1 className="text-xl font-bold text-gray-900" style={{ margin: 0, letterSpacing: '0.5px' }}>Bikash Educational Institution</h1>
                 <p className="text-xs text-gray-400" style={{ margin: 0 }}>Bargarh, Odisha</p>
-                <p className="text-xs text-gray-400" style={{ margin: 0 }}>admin@bikashinstitute.com · +91 9000000000</p>
+                <p className="text-xs text-gray-400" style={{ margin: 0 }}>admin@bikashinstitute.com · +9182492 97170</p>
               </div>
             </div>
             <div className="text-right">
@@ -387,7 +387,7 @@ export function InvoicePreview({ invoice, onClose }: InvoicePreviewProps) {
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-100 text-center" style={{ opacity: 0.7 }}>
-            <p className="text-xs font-medium text-gray-600">Thank you for choosing Bikash Institute!</p>
+            <p className="text-xs font-medium text-gray-600">Thank you for choosing Bikash Educational Institution!</p>
             <p className="text-xs text-gray-400 mt-1">This is a computer-generated invoice.</p>
           </div>
         </div>

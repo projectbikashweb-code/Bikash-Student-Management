@@ -67,14 +67,19 @@ export default function InvoicesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId: genStudentId, feeRecordId: genFeeId, remarks: genRemarks }),
       })
-      if (!res.ok) throw new Error()
-      const inv = await res.json()
-      toast.success(`Invoice ${inv.invoiceNumber} generated`)
+      const data = await res.json()
+      if (!res.ok) {
+        const msg = data?.error ?? 'Failed to generate invoice'
+        const meta = data?.meta ? JSON.stringify(data.meta) : ''
+        toast.error(`${msg}${meta ? ` — ${meta}` : ''}`)
+        return
+      }
+      toast.success(`Invoice ${data.invoiceNumber} generated`)
       qc.invalidateQueries({ queryKey: ['invoices'] })
       setGenOpen(false)
-      setPreviewInvoice(inv)
-    } catch {
-      toast.error('Failed to generate invoice')
+      setPreviewInvoice(data)
+    } catch (err) {
+      toast.error('Network error — check console')
     } finally {
       setGenLoading(false)
     }

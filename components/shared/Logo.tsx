@@ -20,7 +20,7 @@ export function Logo({
     <div className={cn("flex-shrink-0 flex items-center justify-center overflow-hidden bg-brand-300", containerClassName)}>
       <Image
         src="/logo.webp"
-        alt="Bikash Institute Logo"
+        alt="Bikash Educational Institution Logo"
         width={width}
         height={height}
         className={cn("object-contain", padding, imageClassName)}
