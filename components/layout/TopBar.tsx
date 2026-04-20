@@ -63,7 +63,7 @@ export function TopBar({ title, onMenuClick }: TopBarProps) {
       {/* Search */}
       <div ref={searchRef} className="relative">
         {searchOpen ? (
-          <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-64">
+          <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-[200px] sm:w-64">
             <Search size={15} className="text-gray-400 flex-shrink-0" />
             <input
               autoFocus

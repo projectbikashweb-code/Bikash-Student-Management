@@ -16,7 +16,7 @@ export function AppLayout({ title, children }: AppLayoutProps) {
   const { collapsed, setMobileOpen } = useUIStore()
 
   return (
-    <div className="flex w-full min-h-screen bg-gray-50/50">
+    <div className="flex w-full min-h-screen bg-gray-50/50 overflow-x-hidden">
       <Sidebar />
       <div 
         className={cn(

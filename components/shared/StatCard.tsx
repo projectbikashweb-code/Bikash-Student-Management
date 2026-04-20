@@ -23,11 +23,11 @@ export function StatCard({ title, value, icon: Icon, trend, trendUp, color = 'bl
   const colors = colorMap[color]
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{title}</p>
-          <p className="mt-1.5 text-2xl font-bold text-gray-900">{value}</p>
-          {subtitle && <p className="mt-0.5 text-xs text-gray-400">{subtitle}</p>}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider truncate" title={title}>{title}</p>
+          <p className="mt-1.5 text-xl sm:text-2xl font-bold text-gray-900 truncate" title={String(value)}>{value}</p>
+          {subtitle && <p className="mt-0.5 text-xs text-gray-400 truncate" title={subtitle}>{subtitle}</p>}
           {trend && (
             <p className={cn('mt-1 text-xs font-medium', trendUp ? 'text-emerald-600' : 'text-rose-500')}>
               {trendUp ? '↑' : '↓'} {trend}
