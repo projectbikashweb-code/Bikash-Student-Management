@@ -79,7 +79,7 @@ const config: Config = {
         'fade-in': 'fade-in 0.3s ease-out',
       },
       fontFamily: {
-        sans: ["'Plus Jakarta Sans'", 'system-ui', 'sans-serif'],
+        sans: ['var(--font-plus-jakarta-sans)', "'Plus Jakarta Sans'", 'system-ui', 'sans-serif'],
       },
     },
   },
