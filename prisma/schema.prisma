@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  password        String
+  role            Role     @default(STAFF)
+  mustChangePass  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model Student {
+  id             String           @id @default(cuid())
+  name           String
+  phone          String
+  guardianPhone  String?
+  school         String
+  class          String
+  subjects       Json             @default("[]")
+  address        String?
+  profilePhoto   String?
+  enrolledAt     DateTime         @default(now())
+  isActive       Boolean          @default(true)
+  feeRecords     FeeRecord[]
+  invoices       Invoice[]
+  paymentHistory PaymentHistory[]
+  reminders      WhatsAppReminder[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model FeeRecord {
+  id             String           @id @default(cuid())
+  studentId      String
+  student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount         Decimal          @db.Decimal(10, 2)
+  paidAmount     Decimal          @default(0) @db.Decimal(10, 2)
+  dueDate        DateTime
+  paidDate       DateTime?
+  status         FeeStatus        @default(PENDING)
+  month          String
+  notes          String?
+  payments       PaymentHistory[]
+  invoices       Invoice[]
+  reminders      WhatsAppReminder[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Invoice {
+  id            String     @id @default(cuid())
+  invoiceNumber String     @unique
+  studentId     String
+  student       Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeRecordId   String
+  feeRecord     FeeRecord  @relation(fields: [feeRecordId], references: [id], onDelete: Cascade)
+  issuedAt      DateTime   @default(now())
+  items         Json
+  totalAmount   Decimal    @db.Decimal(10, 2)
+  paidAmount    Decimal    @db.Decimal(10, 2)
+  remarks       String?
+  createdAt     DateTime   @default(now())
+}
+
+model PaymentHistory {
+  id          String      @id @default(cuid())
+  feeRecordId String
+  feeRecord   FeeRecord   @relation(fields: [feeRecordId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amountPaid  Decimal     @db.Decimal(10, 2)
+  paymentDate DateTime    @default(now())
+  paymentMode PaymentMode @default(CASH)
+  receivedBy  String?
+  notes       String?
+  createdAt   DateTime    @default(now())
+}
+
+model WhatsAppReminder {
+  id          String         @id @default(cuid())
+  studentId   String
+  student     Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeRecordId String
+  feeRecord   FeeRecord      @relation(fields: [feeRecordId], references: [id], onDelete: Cascade)
+  message     String         @db.Text
+  sentAt      DateTime       @default(now())
+  status      ReminderStatus @default(PENDING)
+  triggeredBy String?
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum FeeStatus {
+  PAID
+  PENDING
+  PARTIAL
+}
+
+enum PaymentMode {
+  CASH
+  ONLINE
+  UPI
+  CHEQUE
+}
+
+enum ReminderStatus {
+  SENT
+  FAILED
+  PENDING
+}
