@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -33,7 +33,62 @@ export default function SettingsPage() {
 }
 
 function InstituteInfo() {
-  const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    address: '',
+    phone: '',
+    email: '',
+    defaultFee: '',
+    defaultDueDate: '',
+  })
+
+  // Fetch current settings on mount
+  useEffect(() => {
+    fetch('/api/settings/institute')
+      .then(r => r.json())
+      .then(data => {
+        setForm({
+          address: data.address ?? '',
+          phone: data.phone ?? '',
+          email: data.email ?? '',
+          defaultFee: String(data.defaultFee ?? 1500),
+          defaultDueDate: String(data.defaultDueDate ?? 10),
+        })
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/settings/institute', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          defaultFee: Number(form.defaultFee),
+          defaultDueDate: Number(form.defaultDueDate),
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to save')
+      toast.success('Settings saved successfully')
+    } catch {
+      toast.error('Failed to save settings')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-lg flex items-center gap-2 text-gray-400 text-sm">
+        <Loader2 size={16} className="animate-spin" /> Loading settings...
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-lg">
       <div className="flex items-center gap-2 mb-5">
@@ -41,26 +96,42 @@ function InstituteInfo() {
         <h2 className="text-base font-semibold text-gray-800">Institute Information</h2>
       </div>
       <div className="space-y-4">
+        {/* Institute Name — read-only */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Institute Name</label>
+          <input value="Bikash Educational Institution" disabled className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-400 bg-gray-50 outline-none" />
+        </div>
+
         {[
-          { label: 'Institute Name', value: 'Bikash Educational Institution', disabled: true },
-          { label: 'Address', value: 'Bargarh, Odisha' },
-          { label: 'Phone', value: '+9182492 97170' },
-          { label: 'Email', value: 'admin@bikashinstitute.com' },
-          { label: 'Default Monthly Fee (₹)', value: '1500' },
-          { label: 'Default Due Date (day of month)', value: '10' },
+          { label: 'Address', key: 'address' },
+          { label: 'Phone', key: 'phone' },
+          { label: 'Email', key: 'email' },
+          { label: 'Default Monthly Fee (₹)', key: 'defaultFee' },
+          { label: 'Default Due Date (day of month)', key: 'defaultDueDate' },
         ].map(f => (
-          <div key={f.label}>
+          <div key={f.key}>
             <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
-            <input defaultValue={f.value} disabled={f.disabled} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 outline-none focus:border-brand-400 disabled:bg-gray-50 disabled:text-gray-400" />
+            <input
+              value={form[f.key as keyof typeof form]}
+              onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 outline-none focus:border-brand-400"
+            />
           </div>
         ))}
-        <button onClick={() => { setSaved(true); toast.success('Settings saved') }} className="px-4 py-2 bg-brand-300 text-gray-900 rounded-xl text-sm font-medium hover:bg-brand-400 transition-colors">
-          Save Changes
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 px-4 py-2 bg-brand-300 text-gray-900 rounded-xl text-sm font-medium hover:bg-brand-400 transition-colors disabled:opacity-60"
+        >
+          {saving && <Loader2 size={14} className="animate-spin" />}
+          {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>
   )
 }
+
 
 function ChangePassword() {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ChangePasswordFormData>({

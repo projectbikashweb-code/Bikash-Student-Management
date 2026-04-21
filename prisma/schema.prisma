@@ -96,6 +96,17 @@ model WhatsAppReminder {
   triggeredBy String?
 }
 
+model InstituteSettings {
+  id              String   @id @default("singleton")
+  name            String   @default("Bikash Educational Institution")
+  address         String   @default("Bargarh, Odisha")
+  phone           String   @default("+9182492 97170")
+  email           String   @default("admin@bikashinstitute.com")
+  defaultFee      Int      @default(1500)
+  defaultDueDate  Int      @default(10)
+  updatedAt       DateTime @updatedAt
+}
+
 enum Role {
   ADMIN
   STAFF
