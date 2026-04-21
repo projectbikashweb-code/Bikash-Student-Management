@@ -142,7 +142,7 @@ function ChangePassword() {
   const onSubmit = async (data: ChangePasswordFormData) => {
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/change-password', {
+      const res = await fetch('/api/settings/password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
