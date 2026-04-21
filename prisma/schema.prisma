@@ -25,6 +25,7 @@ model Student {
   school         String
   class          String
   subjects       Json             @default("[]")
+  monthlyFee     Int?
   address        String?
   profilePhoto   String?
   enrolledAt     DateTime         @default(now())
@@ -102,6 +103,7 @@ model InstituteSettings {
   address         String   @default("Bargarh, Odisha")
   phone           String   @default("+9182492 97170")
   email           String   @default("admin@bikashinstitute.com")
+  classFees       Json     @default("{}")
   defaultFee      Int      @default(1500)
   defaultDueDate  Int      @default(10)
   updatedAt       DateTime @updatedAt

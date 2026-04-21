@@ -21,7 +21,6 @@ import { CLASS_OPTIONS } from '@/lib/constants/classes'
 export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmentProps) {
   const [filterClass, setFilterClass] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [amount, setAmount] = useState('1500')
   const [month, setMonth] = useState('')
   const [dueDate, setDueDate] = useState(
     format(new Date(new Date().getFullYear(), new Date().getMonth(), 10), 'yyyy-MM-dd')
@@ -52,7 +51,6 @@ export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmen
   useEffect(() => {
     if (open && settings) {
       const day = settings.defaultDueDate || 10
-      setAmount(String(settings.defaultFee || 1500))
       setDueDate(format(new Date(new Date().getFullYear(), new Date().getMonth(), day), 'yyyy-MM-dd'))
     } else if (open) {
       setDueDate(format(new Date(new Date().getFullYear(), new Date().getMonth(), 10), 'yyyy-MM-dd'))
@@ -69,13 +67,12 @@ export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmen
   const handleSubmit = async () => {
     if (!selectedIds.length) return toast.error('Select at least one student')
     if (!month) return toast.error('Select a month')
-    if (!amount || Number(amount) <= 0) return toast.error('Enter a valid amount')
     setLoading(true)
     try {
       const res = await fetch('/api/fees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bulk: true, studentIds: selectedIds, amount: Number(amount), dueDate, month, notes }),
+        body: JSON.stringify({ bulk: true, studentIds: selectedIds, dueDate, month, notes }),
       })
       if (!res.ok) throw new Error()
       const d = await res.json()
@@ -116,11 +113,6 @@ export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmen
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Amount (₹) *</label>
-              <input value={amount} onChange={e => setAmount(e.target.value)} type="number" min="0"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400" />
-            </div>
-            <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Due Date *</label>
               <input value={dueDate} onChange={e => setDueDate(e.target.value)} type="date"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400" />
@@ -129,6 +121,12 @@ export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmen
               <label className="block text-xs font-medium text-gray-600 mb-1">Notes</label>
               <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400" />
+            </div>
+            <div className="col-span-2">
+              <div className="p-3 bg-brand-50 border border-brand-200 rounded-xl text-[11px] text-brand-800 flex flex-col justify-center">
+                <span className="font-semibold block mb-0.5">Dynamic Pricing Enforced</span>
+                The generated bill for each student will automatically exactly match their specific Class Tier price (defined in Settings) or their individual Custom Fee override.
+              </div>
             </div>
           </div>
 

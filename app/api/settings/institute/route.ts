@@ -23,7 +23,7 @@ export async function PUT(req: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { name, address, phone, email, defaultFee, defaultDueDate } = body
+  const { name, address, phone, email, defaultFee, defaultDueDate, classFees } = body
 
   const settings = await prisma.instituteSettings.upsert({
     where: { id: 'singleton' },
@@ -33,9 +33,18 @@ export async function PUT(req: Request) {
       ...(email !== undefined && { email }),
       ...(defaultFee !== undefined && { defaultFee: Number(defaultFee) }),
       ...(defaultDueDate !== undefined && { defaultDueDate: Number(defaultDueDate) }),
-      // name is intentionally not updatable via UI (it's a registered name)
+      ...(classFees !== undefined && { classFees }),
     },
-    create: { id: 'singleton', name, address, phone, email, defaultFee: Number(defaultFee), defaultDueDate: Number(defaultDueDate) },
+    create: { 
+      id: 'singleton', 
+      name, 
+      address, 
+      phone, 
+      email, 
+      defaultFee: Number(defaultFee), 
+      defaultDueDate: Number(defaultDueDate),
+      classFees: classFees || {}
+    },
   })
 
   return NextResponse.json(settings)

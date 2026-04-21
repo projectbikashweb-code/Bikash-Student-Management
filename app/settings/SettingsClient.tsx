@@ -8,6 +8,7 @@ import { changePasswordSchema, staffSchema, ChangePasswordFormData, StaffFormDat
 import { AppLayout } from '@/components/layout/AppLayout'
 import { toast } from 'sonner'
 import { KeyRound, Users, Download, Building2, Loader2, Trash2 } from 'lucide-react'
+import { CLASS_OPTIONS } from '@/lib/constants/classes'
 
 const TABS = ['Institute Info', 'Change Password', 'Staff Users', 'Data Export']
 
@@ -41,6 +42,7 @@ function InstituteInfo() {
     email: '',
     defaultFee: '',
     defaultDueDate: '',
+    classFees: {} as Record<string, string>,
   })
 
   // Fetch current settings on mount
@@ -54,6 +56,7 @@ function InstituteInfo() {
           email: data.email ?? '',
           defaultFee: String(data.defaultFee ?? 1500),
           defaultDueDate: String(data.defaultDueDate ?? 10),
+          classFees: data.classFees || {},
         })
         setLoading(false)
       })
@@ -70,6 +73,9 @@ function InstituteInfo() {
           ...form,
           defaultFee: Number(form.defaultFee),
           defaultDueDate: Number(form.defaultDueDate),
+          classFees: Object.fromEntries(
+            Object.entries(form.classFees).map(([k, v]) => [k, Number(v)])
+          ),
         }),
       })
       if (!res.ok) throw new Error('Failed to save')
@@ -112,12 +118,34 @@ function InstituteInfo() {
           <div key={f.key}>
             <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
             <input
-              value={form[f.key as keyof typeof form]}
+              value={form[f.key as keyof typeof form] as string}
               onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 outline-none focus:border-brand-400"
             />
           </div>
         ))}
+
+        <div className="pt-4 border-t border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">Class-Specific Pricing</h3>
+          <p className="text-xs text-gray-400 mb-4">Set specific fees for each class. If left blank, the global Default Monthly Fee will be applied.</p>
+          <div className="grid grid-cols-2 gap-4">
+            {CLASS_OPTIONS.map(c => (
+              <div key={c}>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{c}</label>
+                <input
+                  type="number"
+                  placeholder={form.defaultFee}
+                  value={form.classFees[c] ?? ''}
+                  onChange={e => setForm(prev => ({
+                    ...prev,
+                    classFees: { ...prev.classFees, [c]: e.target.value }
+                  }))}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 outline-none focus:border-brand-400"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
 
         <button
           onClick={handleSave}

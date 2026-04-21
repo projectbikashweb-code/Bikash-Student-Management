@@ -44,17 +44,35 @@ export async function POST(req: NextRequest) {
 
   // Bulk fee assignment
   if (body.bulk && Array.isArray(body.studentIds)) {
-    const { studentIds, amount, dueDate, month, notes } = body
+    const { studentIds, dueDate, month, notes } = body
+    
+    const [students, settings] = await Promise.all([
+      prisma.student.findMany({
+        where: { id: { in: studentIds } },
+        select: { id: true, class: true, monthlyFee: true }
+      }),
+      prisma.instituteSettings.findUnique({ where: { id: 'singleton' } })
+    ])
+
+    const classFees = (settings?.classFees as Record<string, number>) || {}
+    const defaultGlobalFee = settings?.defaultFee || 1500
+
     const records = await prisma.feeRecord.createMany({
-      data: studentIds.map((sid: string) => ({
-        studentId: sid,
-        amount,
-        paidAmount: 0,
-        dueDate: new Date(dueDate),
-        month,
-        notes,
-        status: 'PENDING',
-      })),
+      data: students.map(s => {
+        const customFee = s.monthlyFee ? Number(s.monthlyFee) : null;
+        const clsFee = classFees[s.class] ? Number(classFees[s.class]) : null;
+        const finalAmount = customFee ?? clsFee ?? defaultGlobalFee;
+
+        return {
+          studentId: s.id,
+          amount: finalAmount,
+          paidAmount: 0,
+          dueDate: new Date(dueDate),
+          month,
+          notes,
+          status: 'PENDING',
+        }
+      })
     })
     return NextResponse.json({ created: records.count }, { status: 201 })
   }

@@ -86,9 +86,15 @@ export function StudentForm({ open, onClose, onSubmit, defaultValues, title = 'A
               <input {...register('subjects')} placeholder="Mathematics, Physics" className="input-field" />
             </div>
 
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
-              <input {...register('address')} placeholder="Full address" className="input-field" />
+            <div className="col-span-2 grid grid-cols-2 gap-4">
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Custom Monthly Fee (₹)</label>
+                <input {...register('monthlyFee')} type="number" placeholder="Optional override" className="input-field" />
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
+                <input {...register('address')} placeholder="Full address" className="input-field" />
+              </div>
             </div>
           </div>
 

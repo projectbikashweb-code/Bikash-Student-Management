@@ -9,6 +9,7 @@ export const studentSchema = z.object({
   subjects: z.string().optional(),
   address: z.string().optional(),
   profilePhoto: z.string().url().optional().or(z.literal('')),
+  monthlyFee: z.coerce.number().positive('Must be positive').optional().or(z.literal('').transform(() => undefined)),
   isActive: z.boolean().optional().default(true),
 })
 
