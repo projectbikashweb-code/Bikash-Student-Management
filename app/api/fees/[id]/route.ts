@@ -22,6 +22,10 @@ export async function DELETE(req: NextRequest, context: RouteContext<{ id: strin
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const fee = await prisma.feeRecord.findUnique({ where: { id } })
+  if (!fee) return NextResponse.json({ error: 'Record not found' }, { status: 404 })
+  if (fee.status !== 'PENDING') return NextResponse.json({ error: 'Cannot delete a fee record that has payments' }, { status: 400 })
+
   await prisma.feeRecord.delete({ where: { id } })
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, message: 'Fee record deleted gracefully' })
 }

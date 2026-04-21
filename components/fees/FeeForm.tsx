@@ -41,9 +41,31 @@ export function FeeForm({ open, onClose, studentId, onSuccess }: FeeFormProps) {
     },
   })
 
+  const { data: settings } = useQuery({
+    queryKey: ['settings', 'institute'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/institute')
+      return res.json()
+    },
+    enabled: open,
+  })
+
   useEffect(() => {
-    if (open) reset({ studentId: studentId ?? '', dueDate: format(new Date(new Date().getFullYear(), new Date().getMonth(), 10), 'yyyy-MM-dd') })
-  }, [open, studentId])
+    if (open && settings) {
+      const day = settings.defaultDueDate || 10
+      const fee = settings.defaultFee || 1500
+      reset({ 
+        studentId: studentId ?? '', 
+        amount: Number(fee),
+        dueDate: format(new Date(new Date().getFullYear(), new Date().getMonth(), day), 'yyyy-MM-dd') 
+      })
+    } else if (open) {
+      reset({ 
+        studentId: studentId ?? '', 
+        dueDate: format(new Date(new Date().getFullYear(), new Date().getMonth(), 10), 'yyyy-MM-dd') 
+      })
+    }
+  }, [open, studentId, settings, reset])
 
   const mutation = useMutation({
     mutationFn: async (d: FeeRecordFormData) => {

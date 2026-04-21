@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { X, Loader2, Users } from 'lucide-react'
@@ -39,6 +39,25 @@ export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmen
     },
     enabled: open,
   })
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings', 'institute'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/institute')
+      return res.json()
+    },
+    enabled: open,
+  })
+
+  useEffect(() => {
+    if (open && settings) {
+      const day = settings.defaultDueDate || 10
+      setAmount(String(settings.defaultFee || 1500))
+      setDueDate(format(new Date(new Date().getFullYear(), new Date().getMonth(), day), 'yyyy-MM-dd'))
+    } else if (open) {
+      setDueDate(format(new Date(new Date().getFullYear(), new Date().getMonth(), 10), 'yyyy-MM-dd'))
+    }
+  }, [open, settings])
 
   const students = data ?? []
 

@@ -10,7 +10,7 @@ import { FeeForm } from '@/components/fees/FeeForm'
 import { PaymentModal } from '@/components/fees/PaymentModal'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Plus, CreditCard, ChevronLeft, ChevronRight, CheckCircle, Users } from 'lucide-react'
+import { Plus, CreditCard, ChevronLeft, ChevronRight, CheckCircle, Users, Trash } from 'lucide-react'
 import { BulkFeeAssignment } from '@/components/fees/BulkFeeAssignment'
 
 const MONTHS = ['January 2025','February 2025','March 2025','April 2025','May 2025','June 2025','July 2025','August 2025','September 2025','October 2025','November 2025','December 2025']
@@ -43,6 +43,15 @@ export default function FeesPage() {
     },
     onSuccess: () => { toast.success('Marked as paid'); qc.invalidateQueries({ queryKey: ['fees'] }) },
     onError: () => toast.error('Failed to update'),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/fees/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete')
+    },
+    onSuccess: () => { toast.success('Fee record deleted'); qc.invalidateQueries({ queryKey: ['fees'] }) },
+    onError: () => toast.error('Check if payments are attached. Only PENDING fees can be deleted.'),
   })
 
   return (
@@ -111,6 +120,19 @@ export default function FeesPage() {
                             <CheckCircle size={13} />
                           </button>
                         </>
+                      )}
+                      {r.status === 'PENDING' && (
+                        <button 
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this pending fee completely?')) {
+                              deleteMutation.mutate(r.id)
+                            }
+                          }}
+                          title="Delete Fee" 
+                          className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
+                        >
+                          <Trash size={13} />
+                        </button>
                       )}
                     </div>
                   </td>
