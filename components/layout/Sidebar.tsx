@@ -47,16 +47,15 @@ export function Sidebar() {
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        {/* Logo */}
-        <div className={cn('flex items-center px-4 py-5 border-b border-white/10 relative', collapsed ? 'justify-center' : '')}>
-          <div className="flex-shrink-0">
+        <div className="flex items-center py-5 border-b border-white/10 relative px-2 h-[76px]">
+          <div className="w-14 flex items-center justify-center flex-shrink-0">
             <Logo 
               containerClassName="w-9 h-9 rounded-full shadow-sm border border-white/20" 
               width={36} 
               height={36} 
             />
           </div>
-          <div className={cn("overflow-hidden transition-all duration-300 whitespace-nowrap flex flex-col justify-center pl-3", collapsed ? "w-0 opacity-0 pl-0" : "w-[200px] opacity-100")}>
+          <div className={cn("overflow-hidden transition-all duration-300 whitespace-nowrap flex flex-col justify-center", collapsed ? "w-0 opacity-0" : "w-[180px] opacity-100 pl-1")}>
             <div className="text-white font-bold text-sm leading-tight">Bikash Educational Institution</div>
             <div className="text-white/50 text-[10px] uppercase tracking-widest">Management System</div>
           </div>
@@ -69,7 +68,7 @@ export function Sidebar() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-thin">
+        <nav className="flex-1 py-4 space-y-1 overflow-y-auto scrollbar-thin">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
@@ -79,15 +78,16 @@ export function Sidebar() {
                 onClick={() => setMobileOpen(false)}
                 title={collapsed ? label : undefined}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group',
+                  'flex items-center rounded-lg text-sm font-medium transition-colors group mx-2 h-11',
                   active
                     ? 'bg-brand-300 text-gray-900 shadow-md shadow-brand-300/30'
-                    : 'text-white/60 hover:text-white hover:bg-white/8',
-                  collapsed && 'justify-center px-0'
+                    : 'text-white/60 hover:text-white hover:bg-white/8'
                 )}
               >
-                <Icon className={cn('w-4.5 h-4.5 flex-shrink-0', active ? 'text-gray-900' : 'text-white/50 group-hover:text-white')} size={18} />
-                <span className={cn("whitespace-nowrap transition-all duration-300 overflow-hidden", collapsed ? "w-0 opacity-0" : "w-[160px] opacity-100")}>
+                <div className="w-14 h-full flex items-center justify-center flex-shrink-0">
+                  <Icon className={cn('w-4.5 h-4.5', active ? 'text-gray-900' : 'text-white/50 group-hover:text-white transition-colors')} size={18} />
+                </div>
+                <span className={cn("whitespace-nowrap transition-all duration-300 overflow-hidden", collapsed ? "w-0 opacity-0" : "w-[150px] opacity-100")}>
                   {label}
                 </span>
               </Link>
@@ -96,32 +96,36 @@ export function Sidebar() {
         </nav>
 
         {/* User + Collapse */}
-        <div className="border-t border-white/10 p-3 space-y-2">
-          <div className="flex items-center gap-2 px-2 py-2 rounded-lg bg-white/5 overflow-hidden">
-            <div className="w-7 h-7 rounded-full bg-brand-300 flex items-center justify-center text-xs font-bold text-gray-900 flex-shrink-0">
-              {session?.user?.name?.[0]?.toUpperCase() ?? 'A'}
+        <div className="border-t border-white/10 py-3 space-y-2">
+          <div className="flex items-center rounded-lg bg-white/5 overflow-hidden h-12 mx-2">
+            <div className="w-14 h-full flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-brand-300 flex items-center justify-center text-xs font-bold text-gray-900">
+                {session?.user?.name?.[0]?.toUpperCase() ?? 'A'}
+              </div>
             </div>
-            <div className={cn("flex-1 transition-all duration-300 overflow-hidden", collapsed ? "w-0 opacity-0" : "w-[150px] opacity-100")}>
+            <div className={cn("flex-1 transition-all duration-300 overflow-hidden flex flex-col justify-center", collapsed ? "w-0 opacity-0" : "w-[140px] opacity-100")}>
               <div className="text-white text-xs font-medium truncate">{session?.user?.name ?? 'Admin'}</div>
               <div className="text-white/40 text-[10px] truncate">{session?.user?.email}</div>
             </div>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className={cn(
-              'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-white/60 hover:text-rose-400 hover:bg-rose-500/10 transition-all',
-              collapsed && 'justify-center'
-            )}
+            className="flex items-center w-full rounded-lg text-sm text-white/60 hover:text-rose-400 hover:bg-rose-500/10 transition-colors h-11 mx-2"
           >
-            <LogOut size={16} />
-            <span className={cn("whitespace-nowrap overflow-hidden transition-all duration-300", collapsed ? "w-0 opacity-0" : "w-[100px] opacity-100")}>Logout</span>
+            <div className="w-14 h-full flex items-center justify-center flex-shrink-0">
+              <LogOut size={16} />
+            </div>
+            <span className={cn("whitespace-nowrap overflow-hidden transition-all duration-300 text-left", collapsed ? "w-0 opacity-0" : "w-[140px] opacity-100")}>Logout</span>
           </button>
           {/* Collapse toggle (desktop / mobile) */}
           <button
             onClick={toggleCollapsed}
-            className={cn("flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs text-white/30 hover:text-white/60 transition-all", collapsed && "justify-center")}
+            className="flex items-center w-full rounded-lg text-xs text-white/30 hover:text-white/60 transition-colors h-11 mx-2"
           >
-            {collapsed ? <ChevronRight size={14} /> : <><ChevronLeft size={14} /><span>Collapse</span></>}
+            <div className="w-14 h-full flex items-center justify-center flex-shrink-0">
+              {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            </div>
+            <span className={cn("whitespace-nowrap overflow-hidden transition-all duration-300 text-left", collapsed ? "w-0 opacity-0" : "w-[140px] opacity-100")}>Collapse</span>
           </button>
         </div>
       </aside>
