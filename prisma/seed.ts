@@ -9,13 +9,16 @@ async function main() {
   
   await prisma.user.upsert({
     where: { email: 'admin@bikashinstitute.com' },
-    update: {},
+    update: {
+      password: hashedPassword,
+      mustChangePass: false,
+    },
     create: {
       name: 'Admin',
       email: 'admin@bikashinstitute.com',
       password: hashedPassword,
       role: 'ADMIN',
-      mustChangePass: true,
+      mustChangePass: false,
     },
   })
 
