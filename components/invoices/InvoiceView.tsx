@@ -65,7 +65,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
       doc.text('Management System', marginLeft + 24, 24)
-      doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +9182492 97170', marginLeft + 24, 30)
+      doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +918249297170', marginLeft + 24, 30)
 
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(14)
@@ -214,7 +214,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
       doc.setFontSize(8)
       doc.setTextColor(107, 114, 128)
       doc.text(
-        'Thank you for choosing Bikash Educational Institution! For queries: admin@bikashinstitute.com | +9182492 97170',
+        'Thank you for choosing Bikash Educational Institution! For queries: admin@bikashinstitute.com | +918249297170',
         pageWidth / 2, footerY + 11, { align: 'center' }
       )
       doc.text(
@@ -305,7 +305,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
             <div>
               <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight" style={{ margin: 0, letterSpacing: '0.5px' }}>Bikash Educational Institution</h1>
               <p className="text-xs text-gray-400" style={{ margin: 0 }}>Bargarh, Odisha</p>
-              <p className="text-xs text-gray-400" style={{ margin: 0 }}>admin@bikashinstitute.com · +9182492 97170</p>
+              <p className="text-xs text-gray-400" style={{ margin: 0 }}>admin@bikashinstitute.com · +918249297170</p>
             </div>
           </div>
           <div className="text-left sm:text-right print:text-right">

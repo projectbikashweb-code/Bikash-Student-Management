@@ -10,7 +10,7 @@ import { formatCurrency, formatDate, buildWhatsAppLink, buildReminderMessage } f
 import { toast } from 'sonner'
 import { MessageSquare, Send, CheckSquare, Square } from 'lucide-react'
 
-const DEFAULT_TEMPLATE = `Dear [Student Name]'s parent, your tuition fee of ₹[Amount] for [Month] at Bikash Educational Institution is due on [Due Date]. Please pay at the earliest. Contact:82492 97170. Thank you.`
+const DEFAULT_TEMPLATE = `Dear [Student Name]'s parent, your tuition fee of ₹[Amount] for [Month] at Bikash Educational Institution is due on [Due Date]. Please pay at the earliest. Contact: +918249297170. Thank you.`
 
 export default function RemindersPage() {
   const [tab, setTab] = useState(0)

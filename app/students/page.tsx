@@ -103,7 +103,7 @@ export default function StudentsPage() {
             selected.forEach(id => {
               const student = data?.students?.find((s: any) => s.id === id)
               if (student) {
-                const msg = buildReminderMessage(student.name, 1500, 'this month', new Date(), '9000000000')
+                const msg = buildReminderMessage(student.name, 1500, 'this month', new Date())
                 window.open(buildWhatsAppLink(student.phone, msg), '_blank')
               }
             })

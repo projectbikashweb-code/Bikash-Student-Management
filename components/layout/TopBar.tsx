@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Menu, Search, Bell, X } from 'lucide-react'
+import { Menu, Search, Bell, X, MessageCircle } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatDate, buildWhatsAppLink, buildReminderMessage } from '@/lib/utils'
 
 interface TopBarProps {
   title: string
@@ -15,7 +15,9 @@ export function TopBar({ title, onMenuClick }: TopBarProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const [bellOpen, setBellOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const bellRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const { data: searchResults } = useQuery({
@@ -41,6 +43,9 @@ export function TopBar({ title, onMenuClick }: TopBarProps) {
     function handleClickOutside(e: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowResults(false)
+      }
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -113,13 +118,64 @@ export function TopBar({ title, onMenuClick }: TopBarProps) {
       </div>
 
       {/* Notifications */}
-      <div className="relative">
-        <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 relative">
+      <div className="relative" ref={bellRef}>
+        <button 
+          onClick={() => setBellOpen(!bellOpen)}
+          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 relative transition-colors"
+        >
           <Bell size={18} />
           {notifications && notifications.length > 0 && (
             <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-rose-500 rounded-full" />
           )}
         </button>
+
+        {bellOpen && (
+          <div className="absolute top-full right-0 mt-1 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-fade-in">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 bg-gray-50/50">
+              <span className="font-semibold text-gray-800 text-sm">Due Soon</span>
+              <span className="text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                {notifications?.length || 0} Pendings
+              </span>
+            </div>
+            
+            <div className="max-h-80 overflow-y-auto w-full">
+              {notifications && notifications.length > 0 ? (
+                notifications.map((record: any) => {
+                  const reminderMsg = buildReminderMessage(record.student.name, record.amount, record.month, record.dueDate)
+                  const waLink = record.student.phone ? buildWhatsAppLink(record.student.phone, reminderMsg) : '#'
+                  
+                  return (
+                    <div key={record.id} className="p-3 border-b border-gray-50 hover:bg-gray-50/50 transition-colors flex items-center justify-between gap-3">
+                       <div className="min-w-0">
+                         <div className="text-sm font-medium text-gray-800 truncate">{record.student.name}</div>
+                         <div className="text-[11px] text-gray-500 mt-0.5">Due: <span className="font-medium text-gray-700">{formatDate(record.dueDate)}</span> · <span className="text-rose-500 font-medium">{formatCurrency(record.amount)}</span></div>
+                       </div>
+                       {record.student.phone ? (
+                         <a 
+                           href={waLink} 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="p-2 bg-[#ECFC3A]/20 text-[#1e2235] rounded-xl hover:bg-[#ECFC3A] transition-colors flex-shrink-0"
+                           title="Send WhatsApp Reminder"
+                         >
+                           <MessageCircle size={16} />
+                         </a>
+                       ) : (
+                         <div className="p-2 bg-gray-100 text-gray-300 rounded-xl flex-shrink-0" title="No phone number on record">
+                           <MessageCircle size={16} />
+                         </div>
+                       )}
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="p-6 text-center text-sm text-gray-400">
+                  No upcoming dues!
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Avatar */}

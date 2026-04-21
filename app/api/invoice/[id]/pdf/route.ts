@@ -52,7 +52,7 @@ export async function GET(req: NextRequest, context: RouteContext<{ id: string }
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.text('Management System', marginLeft + 5, 24)
-    doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +9182492 97170', marginLeft + 5, 30)
+    doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +918249297170', marginLeft + 5, 30)
 
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(14)
@@ -178,7 +178,7 @@ export async function GET(req: NextRequest, context: RouteContext<{ id: string }
     doc.setFontSize(8)
     doc.setTextColor(107, 114, 128)
     doc.text(
-      'Thank you for choosing Bikash Educational Institution! For queries: admin@bikashinstitute.com | +9182492 97170',
+      'Thank you for choosing Bikash Educational Institution! For queries: admin@bikashinstitute.com | +918249297170',
       pageWidth / 2, footerY + 11, { align: 'center' }
     )
     doc.text(

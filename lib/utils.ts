@@ -79,7 +79,7 @@ export function buildReminderMessage(
   amount: number,
   month: string,
   dueDate: Date | string,
-  phone: string
+  teacherPhone: string = '8249297170'
 ): string {
-  return `Dear ${studentName}'s parent, your tuition fee of ${formatCurrency(amount)} for ${month} at Bikash Educational Institution is due on ${formatDate(dueDate)}. Please pay at the earliest. Contact: ${phone}. Thank you.`
+  return `Dear ${studentName}'s parent, your tuition fee of ${formatCurrency(amount)} for ${month} at Bikash Educational Institution is due on ${formatDate(dueDate)}. Please pay at the earliest. Contact: ${teacherPhone}. Thank you.`
 }

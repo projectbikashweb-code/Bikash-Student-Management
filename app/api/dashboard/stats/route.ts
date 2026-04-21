@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
   const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
   const dueSoon = await prisma.feeRecord.findMany({
     where: { status: 'PENDING', dueDate: { gte: now, lte: weekFromNow } },
-    include: { student: { select: { name: true } } },
+    include: { student: { select: { name: true, phone: true } } },
     take: 5,
   })
 

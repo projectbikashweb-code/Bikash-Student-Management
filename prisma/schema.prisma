@@ -101,7 +101,7 @@ model InstituteSettings {
   id              String   @id @default("singleton")
   name            String   @default("Bikash Educational Institution")
   address         String   @default("Bargarh, Odisha")
-  phone           String   @default("+9182492 97170")
+  phone           String   @default("+918249297170")
   email           String   @default("admin@bikashinstitute.com")
   classFees       Json     @default("{}")
   defaultFee      Int      @default(1500)

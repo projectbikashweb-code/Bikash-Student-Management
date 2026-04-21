@@ -78,7 +78,7 @@ export default function StudentDetailPage() {
   const sendReminder = async (fee: any) => {
     if (!student) return
     const balance = Number(fee.amount) - Number(fee.paidAmount)
-    const msg = buildReminderMessage(student.name, balance, fee.month, fee.dueDate, '9000000000')
+    const msg = buildReminderMessage(student.name, balance, fee.month, fee.dueDate)
     window.open(buildWhatsAppLink(student.phone, msg), '_blank')
     await fetch('/api/reminders/log', {
       method: 'POST',
