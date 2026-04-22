@@ -33,6 +33,10 @@ export default function StudentsPage() {
     queryKey: ['students', page, search, filterClass, filterStatus],
     queryFn: async () => {
       const res = await fetch(`/api/students?${params}`)
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to fetch students')
+      }
       return res.json()
     },
   })
@@ -41,21 +45,27 @@ export default function StudentsPage() {
     mutationFn: async (d: StudentFormData) => {
       const subjects = d.subjects ?? ''
       const res = await fetch('/api/students', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
-      if (!res.ok) throw new Error('Failed to create student')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create student')
+      }
       return res.json()
     },
     onSuccess: () => { toast.success('Student added successfully'); qc.invalidateQueries({ queryKey: ['students'] }); setAddOpen(false) },
-    onError: () => toast.error('Failed to add student'),
+    onError: (err: any) => toast.error(`Error: ${err.message}`),
   })
 
   const updateMutation = useMutation({
     mutationFn: async (d: StudentFormData) => {
       const res = await fetch(`/api/students/${editStudent.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
-      if (!res.ok) throw new Error('Failed to update')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to update')
+      }
       return res.json()
     },
     onSuccess: () => { toast.success('Student updated'); qc.invalidateQueries({ queryKey: ['students'] }); setEditStudent(null) },
-    onError: () => toast.error('Failed to update student'),
+    onError: (err: any) => toast.error(`Error: ${err.message}`),
   })
 
   const deleteMutation = useMutation({
