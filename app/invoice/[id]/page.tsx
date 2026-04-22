@@ -49,9 +49,24 @@ export default async function PublicInvoicePage({ params }: PageProps) {
     return notFound()
   }
 
+  const safeInvoice = {
+    ...invoice,
+    totalAmount: Number(invoice.totalAmount),
+    paidAmount: Number(invoice.paidAmount),
+    feeRecord: invoice.feeRecord ? {
+      ...invoice.feeRecord,
+      amount: Number(invoice.feeRecord.amount),
+      paidAmount: Number(invoice.feeRecord.paidAmount),
+      payments: invoice.feeRecord.payments?.map(p => ({
+        ...p,
+        amountPaid: Number(p.amountPaid)
+      }))
+    } : null
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-0 sm:py-8 font-sans">
-      <InvoiceView invoice={invoice} isPublic={true} />
+      <InvoiceView invoice={safeInvoice} isPublic={true} />
     </div>
   )
 }
