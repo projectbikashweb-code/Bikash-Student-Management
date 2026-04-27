@@ -3,13 +3,13 @@ import { z } from 'zod'
 export const studentSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().regex(/^\d{10}$/, 'Phone must be exactly 10 digits'),
-  guardianPhone: z.string().regex(/^\d{10}$/, 'Guardian phone must be 10 digits').optional().or(z.literal('')),
+  guardianPhone: z.string().regex(/^\d{10}$/, 'Guardian phone must be 10 digits').optional().or(z.literal('')).or(z.null().transform(() => '')),
   school: z.string().min(2, 'School name is required'),
   class: z.string().min(1, 'Class is required'),
-  subjects: z.string().optional(),
-  address: z.string().optional(),
-  profilePhoto: z.string().url().optional().or(z.literal('')),
-  monthlyFee: z.coerce.number().positive('Must be positive').optional().or(z.literal('').transform(() => undefined)),
+  subjects: z.string().optional().or(z.null().transform(() => undefined)),
+  address: z.string().optional().or(z.null().transform(() => undefined)),
+  profilePhoto: z.string().url().optional().or(z.literal('')).or(z.null().transform(() => '')),
+  monthlyFee: z.coerce.number().positive('Must be positive').optional().or(z.literal('').transform(() => undefined)).or(z.null().transform(() => undefined)),
   isActive: z.boolean().optional().default(true),
 })
 

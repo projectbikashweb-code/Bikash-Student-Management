@@ -25,7 +25,7 @@ export function StudentForm({ open, onClose, onSubmit, defaultValues, title = 'A
 
   useEffect(() => {
     if (open) reset(defaultValues ?? {})
-  }, [open, defaultValues])
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }

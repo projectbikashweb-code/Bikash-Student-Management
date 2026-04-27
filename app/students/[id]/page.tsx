@@ -315,7 +315,18 @@ export default function StudentDetailPage() {
       </div>
 
       <StudentForm open={editOpen} onClose={() => setEditOpen(false)} onSubmit={updateMutation.mutateAsync}
-        defaultValues={student ? { ...student, subjects: Array.isArray(student.subjects) ? student.subjects.join(', ') : '', guardianPhone: student.guardianPhone ?? '' } : undefined}
+        defaultValues={student ? {
+          name: student.name ?? '',
+          phone: student.phone ?? '',
+          guardianPhone: student.guardianPhone ?? '',
+          school: student.school ?? '',
+          class: student.class ?? '',
+          subjects: Array.isArray(student.subjects) ? student.subjects.join(', ') : (student.subjects ?? ''),
+          address: student.address ?? '',
+          profilePhoto: student.profilePhoto ?? '',
+          monthlyFee: student.monthlyFee ?? undefined,
+          isActive: student.isActive ?? true,
+        } : undefined}
         title="Edit Student" loading={updateMutation.isPending} />
       <FeeForm open={feeOpen} onClose={() => setFeeOpen(false)} studentId={id} onSuccess={() => qc.invalidateQueries({ queryKey: ['student', id] })} />
       {paymentFeeId && (

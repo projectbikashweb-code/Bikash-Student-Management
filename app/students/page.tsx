@@ -209,7 +209,19 @@ export default function StudentsPage() {
       </div>
 
       <StudentForm open={addOpen} onClose={() => setAddOpen(false)} onSubmit={createMutation.mutateAsync} loading={createMutation.isPending} />
-      <StudentForm open={!!editStudent} onClose={() => setEditStudent(null)} onSubmit={updateMutation.mutateAsync} defaultValues={editStudent ? { ...editStudent, subjects: Array.isArray(editStudent.subjects) ? editStudent.subjects.join(', ') : '' } : undefined} title="Edit Student" loading={updateMutation.isPending} />
+      <StudentForm open={!!editStudent} onClose={() => setEditStudent(null)} onSubmit={updateMutation.mutateAsync} title="Edit Student" loading={updateMutation.isPending}
+        defaultValues={editStudent ? {
+          name: editStudent.name ?? '',
+          phone: editStudent.phone ?? '',
+          guardianPhone: editStudent.guardianPhone ?? '',
+          school: editStudent.school ?? '',
+          class: editStudent.class ?? '',
+          subjects: Array.isArray(editStudent.subjects) ? editStudent.subjects.join(', ') : (editStudent.subjects ?? ''),
+          address: editStudent.address ?? '',
+          profilePhoto: editStudent.profilePhoto ?? '',
+          monthlyFee: editStudent.monthlyFee ?? undefined,
+          isActive: editStudent.isActive ?? true,
+        } : undefined} />
       <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => deleteMutation.mutateAsync(deleteId!)} title="Delete Student" description="This will permanently delete the student and all their records. This cannot be undone." confirmLabel="Delete" loading={deleteMutation.isPending} />
     </AppLayout>
   )
