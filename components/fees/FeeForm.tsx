@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { feeRecordSchema, FeeRecordFormData } from '@/lib/validations'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, Search, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface FeeFormProps {
@@ -17,11 +17,24 @@ interface FeeFormProps {
 }
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-const currentYear = new Date().getFullYear()
-const MONTH_OPTIONS = MONTHS.flatMap(m => [`${m} ${currentYear}`, `${m} ${currentYear - 1}`])
+const baseYear = Math.max(2026, new Date().getFullYear())
+const MONTH_OPTIONS = MONTHS.flatMap(m => [`${m} ${baseYear}`, `${m} ${baseYear + 1}`])
 
 export function FeeForm({ open, onClose, studentId, onSuccess }: FeeFormProps) {
   const qc = useQueryClient()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const selectRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const { data: students } = useQuery({
     queryKey: ['students-list'],
@@ -126,24 +139,95 @@ export function FeeForm({ open, onClose, studentId, onSuccess }: FeeFormProps) {
 
         <form onSubmit={handleSubmit(d => mutation.mutateAsync(d))} className="p-6 space-y-4">
           {!studentId && (
-            <div>
+            <div className="relative" ref={selectRef}>
               <label className="block text-xs font-medium text-gray-600 mb-1">Student *</label>
-              <select {...register('studentId')} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400">
-                <option value="">Select student</option>
-                {students?.map((s: any) => <option key={s.id} value={s.id}>{s.name} — {s.class}</option>)}
-              </select>
+              
+              <div 
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer flex justify-between items-center focus:border-brand-400"
+              >
+                <span className={selectedStudentId ? 'text-gray-900' : 'text-gray-500'}>
+                  {selectedStudentId && students
+                    ? (() => {
+                        const s = students.find((s:any) => s.id === selectedStudentId)
+                        return s ? `${s.name} — ${s.class}` : 'Select student'
+                      })() 
+                    : 'Select student'}
+                </span>
+                <ChevronDown size={16} className="text-gray-400" />
+              </div>
+
+              {searchOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg flex flex-col overflow-hidden">
+                  <div className="p-2 border-b border-gray-100 flex items-center gap-2">
+                    <Search size={14} className="text-gray-400 shrink-0" />
+                    <input 
+                      type="text"
+                      autoFocus
+                      placeholder="Search student..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-full text-sm outline-none"
+                    />
+                  </div>
+                  <div className="overflow-y-auto max-h-48">
+                    {students?.filter((s:any) => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.class.toLowerCase().includes(searchQuery.toLowerCase())).map((s: any) => (
+                      <div 
+                        key={s.id}
+                        onClick={() => {
+                          setValue('studentId', s.id, { shouldValidate: true })
+                          setSearchOpen(false)
+                          setSearchQuery('')
+                        }}
+                        className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 ${selectedStudentId === s.id ? 'bg-brand-50 text-brand-900' : 'text-gray-700'}`}
+                      >
+                        {s.name} <span className="text-gray-400 text-xs">— {s.class}</span>
+                      </div>
+                    ))}
+                    {students?.filter((s:any) => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.class.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                      <div className="px-3 py-4 text-sm text-center text-gray-400">No students found</div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <input type="hidden" {...register('studentId')} />
               {errors.studentId && <p className="mt-1 text-xs text-rose-500">{errors.studentId.message}</p>}
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Month *</label>
-            <select {...register('month')} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400">
-              <option value="">Select month</option>
-              {MONTH_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
-            {errors.month && <p className="mt-1 text-xs text-rose-500">{errors.month.message}</p>}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Month *</label>
+              <select 
+                value={(watch('month') || '').split(' ')[0] || ''}
+                onChange={e => {
+                  const y = (watch('month') || '').split(' ')[1] || String(baseYear)
+                  setValue('month', `${e.target.value} ${y}`.trim(), { shouldValidate: true })
+                }}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400"
+              >
+                <option value="">Select month</option>
+                {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Year *</label>
+              <select 
+                value={(watch('month') || '').split(' ')[1] || ''}
+                onChange={e => {
+                  const m = (watch('month') || '').split(' ')[0] || ''
+                  setValue('month', m ? `${m} ${e.target.value}` : e.target.value, { shouldValidate: true })
+                }}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400"
+              >
+                <option value="">Select year</option>
+                {Array.from({ length: 5 }, (_, i) => String(baseYear + i)).map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <input type="hidden" {...register('month')} />
           </div>
+          {errors.month && <p className="mt-1 text-xs text-rose-500">{errors.month.message}</p>}
 
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Amount (₹) *</label>

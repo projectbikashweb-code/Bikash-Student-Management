@@ -14,13 +14,15 @@ import { toast } from 'sonner'
 import { Plus, CreditCard, ChevronLeft, ChevronRight, CheckCircle, Users, Trash, Pencil } from 'lucide-react'
 import { BulkFeeAssignment } from '@/components/fees/BulkFeeAssignment'
 
-const MONTHS = ['January 2025','February 2025','March 2025','April 2025','May 2025','June 2025','July 2025','August 2025','September 2025','October 2025','November 2025','December 2025']
+const MONTHS_LIST = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const YEARS_LIST = Array.from({ length: 5 }, (_, i) => String(2026 + i))
 import { CLASS_OPTIONS } from '@/lib/constants/classes'
 
 export default function FeesPage() {
   const qc = useQueryClient()
   const [page, setPage] = useState(1)
   const [filterMonth, setFilterMonth] = useState('')
+  const [filterYear, setFilterYear] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterClass, setFilterClass] = useState('')
   const [feeOpen, setFeeOpen] = useState(false)
@@ -28,10 +30,11 @@ export default function FeesPage() {
   const [paymentFeeId, setPaymentFeeId] = useState<string | null>(null)
   const [editingFee, setEditingFee] = useState<any>(null)
 
-  const params = new URLSearchParams({ page: String(page), limit: '20', month: filterMonth, status: filterStatus, class: filterClass })
+  const monthParam = [filterMonth, filterYear].filter(Boolean).join(' ')
+  const params = new URLSearchParams({ page: String(page), limit: '20', month: monthParam, status: filterStatus, class: filterClass })
 
   const { data, isLoading } = useQuery({
-    queryKey: ['fees', page, filterMonth, filterStatus, filterClass],
+    queryKey: ['fees', page, filterMonth, filterYear, filterStatus, filterClass],
     queryFn: async () => {
       const res = await fetch(`/api/fees?${params}`)
       return res.json()
@@ -66,7 +69,11 @@ export default function FeesPage() {
       <div className="flex flex-wrap gap-3 mb-5">
         <select value={filterMonth} onChange={e => { setFilterMonth(e.target.value); setPage(1) }} className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 outline-none">
           <option value="">All Months</option>
-          {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+          {MONTHS_LIST.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <select value={filterYear} onChange={e => { setFilterYear(e.target.value); setPage(1) }} className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 outline-none">
+          <option value="">All Years</option>
+          {YEARS_LIST.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
         <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1) }} className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 outline-none">
           <option value="">All Status</option>

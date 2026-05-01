@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const limit = parseInt(searchParams.get('limit') ?? '20')
 
   const where: any = {}
-  if (month) where.month = month
+  if (month) where.month = { contains: month, mode: 'insensitive' }
   if (status) where.status = status
   if (studentId) where.studentId = studentId
   if (cls) where.student = { class: cls }

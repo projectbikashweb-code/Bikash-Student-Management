@@ -14,8 +14,8 @@ interface BulkFeeAssignmentProps {
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December']
-const YEAR = new Date().getFullYear()
-const MONTH_OPTIONS = MONTHS.flatMap(m => [`${m} ${YEAR}`, `${m} ${YEAR - 1}`])
+const baseYear = Math.max(2026, new Date().getFullYear())
+const MONTH_OPTIONS = MONTHS.flatMap(m => [`${m} ${baseYear}`, `${m} ${baseYear + 1}`])
 import { CLASS_OPTIONS } from '@/lib/constants/classes'
 
 export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmentProps) {
@@ -104,13 +104,35 @@ export function BulkFeeAssignment({ open, onClose, onSuccess }: BulkFeeAssignmen
         <div className="p-6 overflow-y-auto flex-1">
           {/* Fee details */}
           <div className="grid grid-cols-2 gap-4 mb-5">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Month *</label>
-              <select value={month} onChange={e => setMonth(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400">
-                <option value="">Select month</option>
-                {MONTH_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Month *</label>
+                <select 
+                  value={month.split(' ')[0] || ''} 
+                  onChange={e => {
+                    const y = month.split(' ')[1] || String(baseYear)
+                    setMonth(`${e.target.value} ${y}`.trim())
+                  }}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400"
+                >
+                  <option value="">Month</option>
+                  {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Year *</label>
+                <select 
+                  value={month.split(' ')[1] || ''} 
+                  onChange={e => {
+                    const m = month.split(' ')[0] || ''
+                    setMonth(m ? `${m} ${e.target.value}` : e.target.value)
+                  }}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400"
+                >
+                  <option value="">Year</option>
+                  {Array.from({ length: 5 }, (_, i) => String(baseYear + i)).map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Due Date *</label>
