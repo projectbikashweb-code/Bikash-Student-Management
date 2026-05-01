@@ -30,10 +30,19 @@ export function FeeForm({ open, onClose, studentId, onSuccess }: FeeFormProps) {
       const d = await res.json()
       return d.students ?? []
     },
-    enabled: !studentId,
+    enabled: !studentId && open,
   })
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FeeRecordFormData>({
+  const { data: specificStudent } = useQuery({
+    queryKey: ['student', studentId],
+    queryFn: async () => {
+      const res = await fetch(`/api/students/${studentId}`)
+      return res.json()
+    },
+    enabled: !!studentId && open,
+  })
+
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FeeRecordFormData>({
     resolver: zodResolver(feeRecordSchema),
     defaultValues: {
       studentId: studentId ?? '',
@@ -50,22 +59,44 @@ export function FeeForm({ open, onClose, studentId, onSuccess }: FeeFormProps) {
     enabled: open,
   })
 
+  const selectedStudentId = watch('studentId')
+
+  // Reset form when modal opens
   useEffect(() => {
-    if (open && settings) {
-      const day = settings.defaultDueDate || 10
-      const fee = settings.defaultFee || 1500
+    if (open) {
+      const day = settings?.defaultDueDate || 10
+      let initialAmount = settings?.defaultFee || 1500
+
+      if (studentId && specificStudent && settings) {
+        if (specificStudent.monthlyFee) initialAmount = Number(specificStudent.monthlyFee)
+        else if (settings.classFees?.[specificStudent.class]) initialAmount = Number(settings.classFees[specificStudent.class])
+      }
+
       reset({ 
         studentId: studentId ?? '', 
-        amount: Number(fee),
+        amount: Number(initialAmount),
         dueDate: format(new Date(new Date().getFullYear(), new Date().getMonth(), day), 'yyyy-MM-dd') 
       })
-    } else if (open) {
+    } else {
       reset({ 
         studentId: studentId ?? '', 
         dueDate: format(new Date(new Date().getFullYear(), new Date().getMonth(), 10), 'yyyy-MM-dd') 
       })
     }
-  }, [open, studentId, settings, reset])
+  }, [open, studentId, settings, specificStudent, reset])
+
+  // Watch dropdown changes to auto-fill amount
+  useEffect(() => {
+    if (open && !studentId && selectedStudentId && students && settings) {
+      const student = students.find((s: any) => s.id === selectedStudentId)
+      if (student) {
+        let amt = settings.defaultFee || 1500
+        if (student.monthlyFee) amt = Number(student.monthlyFee)
+        else if (settings.classFees?.[student.class]) amt = Number(settings.classFees[student.class])
+        setValue('amount', amt)
+      }
+    }
+  }, [selectedStudentId, students, settings, setValue, open, studentId])
 
   const mutation = useMutation({
     mutationFn: async (d: FeeRecordFormData) => {

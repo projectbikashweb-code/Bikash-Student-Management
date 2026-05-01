@@ -52,7 +52,7 @@ export async function GET(req: NextRequest, context: RouteContext<{ id: string }
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.text('Management System', marginLeft + 5, 24)
-    doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +918249297170', marginLeft + 5, 30)
+    doc.text('Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008 | admin@bikashinstitute.com | +918249297170', marginLeft + 5, 30)
 
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(14)

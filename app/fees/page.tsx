@@ -8,9 +8,10 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { TableSkeleton } from '@/components/shared/SkeletonLoader'
 import { FeeForm } from '@/components/fees/FeeForm'
 import { PaymentModal } from '@/components/fees/PaymentModal'
+import { EditFeeModal } from '@/components/fees/EditFeeModal'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Plus, CreditCard, ChevronLeft, ChevronRight, CheckCircle, Users, Trash } from 'lucide-react'
+import { Plus, CreditCard, ChevronLeft, ChevronRight, CheckCircle, Users, Trash, Pencil } from 'lucide-react'
 import { BulkFeeAssignment } from '@/components/fees/BulkFeeAssignment'
 
 const MONTHS = ['January 2025','February 2025','March 2025','April 2025','May 2025','June 2025','July 2025','August 2025','September 2025','October 2025','November 2025','December 2025']
@@ -25,6 +26,7 @@ export default function FeesPage() {
   const [feeOpen, setFeeOpen] = useState(false)
   const [bulkOpen, setBulkOpen] = useState(false)
   const [paymentFeeId, setPaymentFeeId] = useState<string | null>(null)
+  const [editingFee, setEditingFee] = useState<any>(null)
 
   const params = new URLSearchParams({ page: String(page), limit: '20', month: filterMonth, status: filterStatus, class: filterClass })
 
@@ -38,10 +40,14 @@ export default function FeesPage() {
 
   const markPaidMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/fees/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'PAID', paidDate: new Date() }) })
+      const res = await fetch(`/api/fees/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'PAID', markAsPaid: true, paidDate: new Date() }),
+      })
       if (!res.ok) throw new Error('Failed')
     },
-    onSuccess: () => { toast.success('Marked as paid'); qc.invalidateQueries({ queryKey: ['fees'] }) },
+    onSuccess: () => { toast.success('Marked as paid'); qc.invalidateQueries({ queryKey: ['fees'] }); qc.invalidateQueries({ queryKey: ['payments'] }) },
     onError: () => toast.error('Failed to update'),
   })
 
@@ -116,11 +122,28 @@ export default function FeesPage() {
                           <button onClick={() => setPaymentFeeId(r.id)} title="Record Payment" className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors text-xs">
                             <CreditCard size={13} />
                           </button>
-                          <button onClick={() => markPaidMutation.mutate(r.id)} title="Mark as Paid" className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Mark this fee as fully paid (${formatCurrency(r.amount)})?`)) {
+                                markPaidMutation.mutate(r.id)
+                              }
+                            }}
+                            title="Mark as Paid"
+                            disabled={markPaidMutation.isPending}
+                            className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50"
+                          >
                             <CheckCircle size={13} />
                           </button>
                         </>
                       )}
+                      {/* Edit button — always visible so user can correct any record */}
+                      <button
+                        onClick={() => setEditingFee(r)}
+                        title="Edit Fee Record"
+                        className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                      >
+                        <Pencil size={13} />
+                      </button>
                       {r.status === 'PENDING' && (
                         <button 
                           onClick={() => {
@@ -157,6 +180,8 @@ export default function FeesPage() {
       <FeeForm open={feeOpen} onClose={() => setFeeOpen(false)} onSuccess={() => qc.invalidateQueries({ queryKey: ['fees'] })} />
       <BulkFeeAssignment open={bulkOpen} onClose={() => setBulkOpen(false)} onSuccess={() => qc.invalidateQueries({ queryKey: ['fees'] })} />
       {paymentFeeId && <PaymentModal open={!!paymentFeeId} onClose={() => setPaymentFeeId(null)} feeRecordId={paymentFeeId} onSuccess={() => setPaymentFeeId(null)} />}
+      <EditFeeModal open={!!editingFee} onClose={() => setEditingFee(null)} feeRecord={editingFee} />
     </AppLayout>
   )
 }
+

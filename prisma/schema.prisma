@@ -101,7 +101,7 @@ model WhatsAppReminder {
 model InstituteSettings {
   id              String   @id @default("singleton")
   name            String   @default("Bikash Educational Institution")
-  address         String   @default("Bargarh, Odisha")
+  address         String   @default("Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008")
   phone           String   @default("+918249297170")
   email           String   @default("admin@bikashinstitute.com")
   classFees       Json     @default("{}")

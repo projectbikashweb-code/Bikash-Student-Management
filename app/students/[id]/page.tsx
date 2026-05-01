@@ -89,6 +89,14 @@ export default function StudentDetailPage() {
     toast.success('WhatsApp reminder opened')
   }
 
+  const { data: settings } = useQuery({
+    queryKey: ['settings', 'institute'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/institute')
+      return res.json()
+    },
+  })
+
   if (isLoading) {
     return (
       <AppLayout title="Student Details">
@@ -111,6 +119,10 @@ export default function StudentDetailPage() {
 
   const subjects = Array.isArray(student.subjects) ? student.subjects.join(', ') : ''
   const unpaidFees = student.feeRecords?.filter((f: any) => f.status !== 'PAID') ?? []
+
+  const assignedFee = student?.monthlyFee 
+    ? Number(student.monthlyFee) 
+    : (settings?.classFees?.[student?.class] ? Number(settings.classFees[student.class]) : (settings?.defaultFee || 1500))
 
   return (
     <AppLayout title="Student Details">
@@ -146,6 +158,7 @@ export default function StudentDetailPage() {
               <div className="flex items-center gap-2 text-gray-500"><Phone size={14} className="text-gray-400 flex-shrink-0" /><span>{student.phone}</span></div>
               {student.guardianPhone && <div className="flex items-center gap-2 text-gray-500"><Phone size={14} className="text-gray-400 flex-shrink-0" /><span className="text-xs">Guardian: {student.guardianPhone}</span></div>}
               <div className="flex items-center gap-2 text-gray-500"><Calendar size={14} className="text-gray-400 flex-shrink-0" /><span>Enrolled {formatDate(student.enrolledAt)}</span></div>
+              <div className="flex items-center gap-2 text-gray-500"><CreditCard size={14} className="text-gray-400 flex-shrink-0" /><span>Fee: <strong className="text-gray-800">{formatCurrency(assignedFee)}/mo</strong></span></div>
               {student.address && <div className="flex items-center gap-2 text-gray-500 col-span-2"><MapPin size={14} className="text-gray-400 flex-shrink-0" /><span className="truncate">{student.address}</span></div>}
               {subjects && <div className="flex items-center gap-2 col-span-2 md:col-span-3"><BookOpen size={14} className="text-brand-400 flex-shrink-0" /><span className="text-brand-600 font-medium text-sm">{subjects}</span></div>}
             </div>

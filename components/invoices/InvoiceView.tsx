@@ -65,7 +65,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
       doc.text('Management System', marginLeft + 24, 24)
-      doc.text('Bargarh, Odisha | admin@bikashinstitute.com | +918249297170', marginLeft + 24, 30)
+      doc.text('Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008 | admin@bikashinstitute.com | +918249297170', marginLeft + 24, 30)
 
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(14)
@@ -304,7 +304,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
             />
             <div>
               <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight" style={{ margin: 0, letterSpacing: '0.5px' }}>Bikash Educational Institution</h1>
-              <p className="text-xs text-gray-400" style={{ margin: 0 }}>Bargarh, Odisha</p>
+              <p className="text-xs text-gray-400" style={{ margin: 0 }}>Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008</p>
               <p className="text-xs text-gray-400" style={{ margin: 0 }}>admin@bikashinstitute.com · +918249297170</p>
             </div>
           </div>
