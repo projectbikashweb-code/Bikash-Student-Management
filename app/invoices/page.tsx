@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { InvoicePreview } from '@/components/invoices/InvoicePreview'
@@ -9,7 +9,7 @@ import { TableSkeleton } from '@/components/shared/SkeletonLoader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Plus, FileText, Eye, Trash2, ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-react'
+import { Plus, FileText, Eye, Trash2, ChevronLeft, ChevronRight, X, Loader2, Search, ChevronDown } from 'lucide-react'
 
 export default function InvoicesPage() {
   const qc = useQueryClient()
@@ -20,7 +20,20 @@ export default function InvoicesPage() {
   const [genFeeId, setGenFeeId] = useState('')
   const [genRemarks, setGenRemarks] = useState('')
   const [genLoading, setGenLoading] = useState(false)
+  
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const selectRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
   const { data, isLoading } = useQuery({
     queryKey: ['invoices', page],
     queryFn: async () => {
@@ -157,12 +170,58 @@ export default function InvoicesPage() {
               <button onClick={() => setGenOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"><X size={16} /></button>
             </div>
             <div className="space-y-4">
-              <div>
+              <div className="relative" ref={selectRef}>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Student *</label>
-                <select value={genStudentId} onChange={e => { setGenStudentId(e.target.value); setGenFeeId('') }} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-400">
-                  <option value="">Select student</option>
-                  {students?.map((s: any) => <option key={s.id} value={s.id}>{s.name} — {s.class}</option>)}
-                </select>
+                
+                <div 
+                  onClick={() => setSearchOpen(!searchOpen)}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer flex justify-between items-center focus:border-brand-400"
+                >
+                  <span className={genStudentId ? 'text-gray-900' : 'text-gray-500'}>
+                    {genStudentId && students
+                      ? (() => {
+                          const s = students.find((s:any) => s.id === genStudentId)
+                          return s ? `${s.name} — ${s.class}` : 'Select student'
+                        })() 
+                      : 'Select student'}
+                  </span>
+                  <ChevronDown size={16} className="text-gray-400" />
+                </div>
+
+                {searchOpen && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg flex flex-col overflow-hidden">
+                    <div className="p-2 border-b border-gray-100 flex items-center gap-2">
+                      <Search size={14} className="text-gray-400 shrink-0" />
+                      <input 
+                        type="text"
+                        autoFocus
+                        placeholder="Search student..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full text-sm outline-none"
+                      />
+                    </div>
+                    <div className="overflow-y-auto max-h-48">
+                      {students?.filter((s:any) => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.class.toLowerCase().includes(searchQuery.toLowerCase())).map((s: any) => (
+                        <div 
+                          key={s.id}
+                          onClick={() => {
+                            setGenStudentId(s.id)
+                            setGenFeeId('')
+                            setSearchOpen(false)
+                            setSearchQuery('')
+                          }}
+                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 ${genStudentId === s.id ? 'bg-brand-50 text-brand-900' : 'text-gray-700'}`}
+                        >
+                          {s.name} <span className="text-gray-400 text-xs">— {s.class}</span>
+                        </div>
+                      ))}
+                      {students?.filter((s:any) => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.class.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                        <div className="px-3 py-4 text-sm text-center text-gray-400">No students found</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Fee Record *</label>

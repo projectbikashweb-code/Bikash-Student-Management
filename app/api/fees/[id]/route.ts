@@ -82,10 +82,30 @@ export async function PUT(req: NextRequest, context: RouteContext<{ id: string }
       }
     }
 
-    const updated = await prisma.feeRecord.update({
-      where: { id },
-      data: updateData,
-      include: { student: { select: { id: true, name: true, class: true, phone: true } } },
+    const difference = newPaidAmount !== undefined ? newPaidAmount - Number(feeRecord.paidAmount) : 0
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedFee = await tx.feeRecord.update({
+        where: { id },
+        data: updateData,
+        include: { student: { select: { id: true, name: true, class: true, phone: true } } },
+      })
+
+      if (difference !== 0) {
+        await tx.paymentHistory.create({
+          data: {
+            feeRecordId: id,
+            studentId: feeRecord.studentId,
+            amountPaid: difference,
+            paymentDate: body.paidDate ? new Date(body.paidDate) : new Date(),
+            paymentMode: 'CASH',
+            receivedBy: (session.user as any)?.name || 'Admin',
+            notes: body.notes || (difference > 0 ? 'Payment recorded via edit' : 'Payment reversed via edit'),
+          }
+        })
+      }
+
+      return updatedFee
     })
 
     return NextResponse.json(updated)
