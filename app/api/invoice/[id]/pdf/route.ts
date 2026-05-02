@@ -18,6 +18,12 @@ export async function GET(req: NextRequest, context: RouteContext<{ id: string }
 
     if (!invoice) return new NextResponse('Invoice not found', { status: 404 })
 
+    const settings = await prisma.instituteSettings.findUnique({ where: { id: 'singleton' } })
+    const instituteName = settings?.name || 'Bikash Educational Institution'
+    const instituteAddress = settings?.address || 'Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008'
+    const institutePhone = settings?.phone || '+918249297170'
+    const instituteEmail = settings?.email || 'admin@bikashinstitute.com'
+
     // Dynamically importing jsPDF and jspdf-autotable since they are large and primarily client-side
     const jsPDF = (await import('jspdf')).default
     const autoTable = (await import('jspdf-autotable')).default
@@ -48,11 +54,11 @@ export async function GET(req: NextRequest, context: RouteContext<{ id: string }
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(20)
     doc.setFont('helvetica', 'bold')
-    doc.text('Bikash Educational Institution', marginLeft + 5, 18)
+    doc.text(instituteName, marginLeft + 5, 18)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.text('Management System', marginLeft + 5, 24)
-    doc.text('Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008 | admin@bikashinstitute.com | +918249297170', marginLeft + 5, 30)
+    doc.text(`${instituteAddress} | ${instituteEmail} | ${institutePhone}`, marginLeft + 5, 30)
 
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(14)
@@ -178,7 +184,7 @@ export async function GET(req: NextRequest, context: RouteContext<{ id: string }
     doc.setFontSize(8)
     doc.setTextColor(107, 114, 128)
     doc.text(
-      'Thank you for choosing Bikash Educational Institution! For queries: admin@bikashinstitute.com | +918249297170',
+      `Thank you for choosing ${instituteName}! For queries: ${instituteEmail} | ${institutePhone}`,
       pageWidth / 2, footerY + 11, { align: 'center' }
     )
     doc.text(

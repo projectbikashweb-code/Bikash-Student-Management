@@ -65,7 +65,11 @@ export default function StudentDetailPage() {
       })
       if (!res.ok) throw new Error()
       const inv = await res.json()
-      toast.success(`Invoice ${inv.invoiceNumber} generated`)
+      if (res.status === 201) {
+        toast.success(`Invoice ${inv.invoiceNumber} generated`)
+      } else {
+        toast.success('Invoice retrieved successfully')
+      }
       qc.invalidateQueries({ queryKey: ['student', id] })
       setPreviewInvoice(inv)
     } catch {

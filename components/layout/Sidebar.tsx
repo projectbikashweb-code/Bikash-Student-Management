@@ -5,6 +5,7 @@ import { Logo } from '@/components/shared/Logo'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
+import { useQuery } from '@tanstack/react-query'
 import {
   LayoutDashboard, Users, CreditCard, FileText,
   Receipt, MessageSquare, Settings, GraduationCap,
@@ -26,6 +27,16 @@ export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { collapsed, mobileOpen, toggleCollapsed, setMobileOpen } = useUIStore()
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings-institute'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/institute')
+      return res.json()
+    }
+  })
+
+  const instituteName = settings?.name || 'Bikash Educational Institution'
 
   return (
     <>
@@ -56,8 +67,8 @@ export function Sidebar() {
             />
           </div>
           <div className={cn("overflow-hidden transition-all duration-300 whitespace-nowrap flex flex-col justify-center", collapsed ? "w-0 opacity-0" : "w-[180px] opacity-100 pl-1")}>
-            <div className="text-white font-bold text-sm leading-tight">Bikash Educational Institution</div>
-            <div className="text-white/50 text-[10px] uppercase tracking-widest">Management System</div>
+            <div className="text-white font-bold text-sm leading-tight truncate">{instituteName}</div>
+            <div className="text-white/50 text-[10px] uppercase tracking-widest mt-1">Management System</div>
           </div>
           {/* Mobile close */}
           {!collapsed && (

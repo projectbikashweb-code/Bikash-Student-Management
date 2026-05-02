@@ -14,16 +14,24 @@ export async function GET(req: NextRequest) {
     const students = await prisma.student.findMany({
       orderBy: { createdAt: 'desc' },
     })
-    const csv = [
+    const csvRows = [
       'Name,Phone,Guardian Phone,School,Class,Subjects,Address,Enrolled,Active',
-      ...students.map(s => [
-        s.name, s.phone, s.guardianPhone ?? '', s.school, s.class,
-        Array.isArray(s.subjects) ? (s.subjects as string[]).join('; ') : '',
-        s.address ?? '',
-        new Date(s.enrolledAt).toLocaleDateString('en-IN'),
-        s.isActive ? 'Yes' : 'No',
-      ].join(',')),
+      ...students.map(s => {
+        const dateStr = new Date(s.enrolledAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        return [
+          `"${s.name.replace(/"/g, '""')}"`,
+          `"${s.phone.replace(/"/g, '""')}"`,
+          `"${(s.guardianPhone ?? '').replace(/"/g, '""')}"`,
+          `"${s.school.replace(/"/g, '""')}"`,
+          `"${s.class.replace(/"/g, '""')}"`,
+          `"${(Array.isArray(s.subjects) ? (s.subjects as string[]).join('; ') : '').replace(/"/g, '""')}"`,
+          `"${(s.address ?? '').replace(/"/g, '""')}"`,
+          `=" ${dateStr}"`,
+          `"${s.isActive ? 'Yes' : 'No'}"`,
+        ].join(',')
+      }),
     ].join('\n')
+    const csv = '\uFEFF' + csvRows
 
     return new NextResponse(csv, {
       headers: {

@@ -80,6 +80,14 @@ export default function StudentsPage() {
   const toggleSelect = (id: string) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id])
   const toggleAll = () => setSelected(s => s.length === data?.students?.length ? [] : data?.students?.map((s: any) => s.id) ?? [])
 
+  const { data: settings } = useQuery({
+    queryKey: ['settings-institute'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/institute')
+      return res.json()
+    }
+  })
+
   return (
     <AppLayout title="Students">
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
@@ -113,7 +121,19 @@ export default function StudentsPage() {
             selected.forEach(id => {
               const student = data?.students?.find((s: any) => s.id === id)
               if (student) {
-                const msg = buildReminderMessage(student.name, 1500, 'this month', new Date())
+                let amount = student.monthlyFee ?? 1500
+                const latestFee = student.feeRecords?.[0]
+                if (latestFee && (latestFee.status === 'PENDING' || latestFee.status === 'PARTIAL')) {
+                  amount = latestFee.amount - latestFee.paidAmount
+                }
+                const msg = buildReminderMessage(
+                  student.name, 
+                  amount, 
+                  'this month', 
+                  new Date(),
+                  settings?.name,
+                  settings?.phone
+                )
                 window.open(buildWhatsAppLink(student.phone, msg), '_blank')
               }
             })

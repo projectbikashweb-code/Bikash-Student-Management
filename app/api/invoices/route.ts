@@ -59,10 +59,14 @@ export async function POST(req: NextRequest) {
 
     const existingInvoice = await prisma.invoice.findFirst({
       where: { feeRecordId },
+      include: {
+        student: { select: { id: true, name: true, class: true, phone: true, school: true } },
+        feeRecord: { select: { month: true, status: true } },
+      },
     })
 
     if (existingInvoice) {
-      throw new Error('Invoice already exists')
+      return NextResponse.json(existingInvoice, { status: 200 })
     }
 
     // Generate invoice number — use the highest existing number, not count

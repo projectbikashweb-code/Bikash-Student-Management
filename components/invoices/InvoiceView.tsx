@@ -5,6 +5,8 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { X, Download, Printer, MessageCircle } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 
+import { useQuery } from '@tanstack/react-query'
+
 interface InvoiceViewProps {
   invoice: any
   onClose?: () => void
@@ -12,6 +14,19 @@ interface InvoiceViewProps {
 }
 
 export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewProps) {
+  const { data: settings } = useQuery({
+    queryKey: ['settings-institute'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/institute')
+      return res.json()
+    }
+  })
+
+  const instituteName = settings?.name || 'Bikash Educational Institution'
+  const instituteAddress = settings?.address || 'Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008'
+  const institutePhone = settings?.phone || '+918249297170'
+  const instituteEmail = settings?.email || 'admin@bikashinstitute.com'
+
   const pdfCurrency = (amount: number | string | null | undefined): string => {
     const num = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0)
     const formatted = new Intl.NumberFormat('en-IN', {
@@ -61,11 +76,11 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(20)
       doc.setFont('helvetica', 'bold')
-      doc.text('Bikash Educational Institution', marginLeft + 24, 18)
+      doc.text(instituteName, marginLeft + 24, 18)
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
       doc.text('Management System', marginLeft + 24, 24)
-      doc.text('Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008 | admin@bikashinstitute.com | +918249297170', marginLeft + 24, 30)
+      doc.text(`${instituteAddress} | ${instituteEmail} | ${institutePhone}`, marginLeft + 24, 30)
 
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(14)
@@ -214,7 +229,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
       doc.setFontSize(8)
       doc.setTextColor(107, 114, 128)
       doc.text(
-        'Thank you for choosing Bikash Educational Institution! For queries: admin@bikashinstitute.com | +918249297170',
+        `Thank you for choosing ${instituteName}! For queries: ${instituteEmail} | ${institutePhone}`,
         pageWidth / 2, footerY + 11, { align: 'center' }
       )
       doc.text(
@@ -246,7 +261,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
       ? invoice.feeRecord.payments[invoice.feeRecord.payments.length - 1].paymentMode 
       : 'N/A'
 
-    let message = `🎓 Bikash Educational Institution\n\n`
+    let message = `🎓 ${instituteName}\n\n`
     message += `Invoice for: ${invoice.student.name}\n`
     message += `Amount: ₹${invoice.totalAmount}\n`
     message += `Status: ${invoice.feeRecord?.status || 'N/A'}\n`
@@ -266,7 +281,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
   }
 
   return (
-    <div className={`relative bg-white shadow-2xl w-full max-w-2xl mx-auto overflow-y-auto ${isPublic ? 'my-8 sm:rounded-2xl min-h-screen sm:min-h-0' : 'rounded-2xl max-h-[95vh] animate-fade-in'}`}>
+    <div className={`relative bg-white shadow-2xl w-full max-w-2xl mx-auto overflow-y-auto print:static print:w-full print:max-w-none print:m-0 print:p-0 print:shadow-none print:overflow-visible print:bg-transparent ${isPublic ? 'my-8 sm:rounded-2xl min-h-screen sm:min-h-0' : 'rounded-2xl max-h-[95vh] animate-fade-in'}`}>
       {/* Actions bar */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 sticky top-0 bg-white z-10 no-print">
         <span className="text-sm font-semibold text-gray-700">Invoice{isPublic ? '' : ' Preview'}</span>
@@ -303,9 +318,9 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
               }}
             />
             <div>
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight" style={{ margin: 0, letterSpacing: '0.5px' }}>Bikash Educational Institution</h1>
-              <p className="text-xs text-gray-400" style={{ margin: 0 }}>Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008</p>
-              <p className="text-xs text-gray-400" style={{ margin: 0 }}>admin@bikashinstitute.com · +918249297170</p>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight" style={{ margin: 0, letterSpacing: '0.5px' }}>{instituteName}</h1>
+              <p className="text-xs text-gray-400" style={{ margin: 0 }}>{instituteAddress}</p>
+              <p className="text-xs text-gray-400" style={{ margin: 0 }}>{instituteEmail} · {institutePhone}</p>
             </div>
           </div>
           <div className="text-left sm:text-right print:text-right">
@@ -388,7 +403,7 @@ export function InvoiceView({ invoice, onClose, isPublic = false }: InvoiceViewP
 
         {/* Footer */}
         <div className="mt-8 pt-6 border-t border-gray-100 text-center" style={{ opacity: 0.7 }}>
-          <p className="text-xs font-medium text-gray-600">Thank you for choosing Bikash Educational Institution!</p>
+          <p className="text-xs font-medium text-gray-600">Thank you for choosing {instituteName}!</p>
           <p className="text-xs text-gray-400 mt-1">This is a computer-generated invoice.</p>
         </div>
       </div>

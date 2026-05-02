@@ -31,18 +31,22 @@ export async function GET(req: NextRequest) {
       include: { student: { select: { name: true, class: true } } },
       orderBy: { paymentDate: 'desc' },
     })
-    const csv = [
+    const csvRows = [
       'Date,Student,Class,Amount,Mode,Received By,Notes',
-      ...all.map(p => [
-        new Date(p.paymentDate).toLocaleDateString('en-IN'),
-        p.student.name,
-        p.student.class,
-        p.amountPaid.toString(),
-        p.paymentMode,
-        p.receivedBy ?? '',
-        p.notes ?? '',
-      ].join(',')),
+      ...all.map(p => {
+        const dateStr = new Date(p.paymentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        return [
+          `=" ${dateStr}"`,
+          `"${p.student.name.replace(/"/g, '""')}"`,
+          `"${p.student.class.replace(/"/g, '""')}"`,
+          `"${p.amountPaid.toString()}"`,
+          `"${p.paymentMode}"`,
+          `"${(p.receivedBy ?? '').replace(/"/g, '""')}"`,
+          `"${(p.notes ?? '').replace(/"/g, '""')}"`,
+        ].join(',')
+      }),
     ].join('\n')
+    const csv = '\uFEFF' + csvRows
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv',

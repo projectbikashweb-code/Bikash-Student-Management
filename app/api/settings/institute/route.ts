@@ -5,14 +5,21 @@ import { prisma } from '@/lib/prisma'
 
 // GET — fetch current institute settings (creates defaults if first time)
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const settings = await prisma.instituteSettings.upsert({
+  const settings = await prisma.instituteSettings.findUnique({
     where: { id: 'singleton' },
-    update: {},
-    create: { id: 'singleton' },
   })
+
+  if (!settings) {
+    return NextResponse.json({
+      name: "Bikash Educational Institution",
+      address: "Plot No-926/A/1 Sri Vihar Colony,Tulsipur,Cuttack,753008",
+      phone: "+918249297170",
+      email: "admin@bikashinstitute.com",
+      defaultFee: 1500,
+      defaultDueDate: 10,
+      classFees: {}
+    })
+  }
 
   return NextResponse.json(settings)
 }
