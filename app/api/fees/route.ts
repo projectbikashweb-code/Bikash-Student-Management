@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { feeRecordSchema } from '@/lib/validations'
+import { z } from 'zod'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -43,9 +44,18 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
 
   // Bulk fee assignment
-  if (body.bulk && Array.isArray(body.studentIds)) {
-    const { studentIds, dueDate, month, notes } = body
-    
+  if (body.bulk) {
+    const bulkSchema = z.object({
+      studentIds: z.array(z.string()).min(1, 'At least one student is required'),
+      dueDate: z.string().min(1, 'Due date is required'),
+      month: z.string().min(1, 'Month is required'),
+      notes: z.string().optional(),
+    })
+
+    const parsedBulk = bulkSchema.safeParse(body)
+    if (!parsedBulk.success) return NextResponse.json({ error: parsedBulk.error.flatten() }, { status: 400 })
+
+    const { studentIds, dueDate, month, notes } = parsedBulk.data
     const [students, settings] = await Promise.all([
       prisma.student.findMany({
         where: { id: { in: studentIds } },

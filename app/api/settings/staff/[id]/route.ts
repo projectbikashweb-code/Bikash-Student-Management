@@ -7,7 +7,9 @@ import { prisma } from '@/lib/prisma'
 export async function DELETE(req: NextRequest, context: RouteContext<{ id: string }>) {
   const { id } = await context.params
   const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session || (session.user as any)?.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const user = await prisma.user.findUnique({ where: { id } })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })

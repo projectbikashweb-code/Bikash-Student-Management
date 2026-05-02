@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { TableSkeleton } from '@/components/shared/SkeletonLoader'
+import { WhatsAppQueueModal } from '@/components/shared/WhatsAppQueueModal'
 import { formatDate, buildWhatsAppLink, buildReminderMessage } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Plus, Search, Filter, Users, ChevronLeft, ChevronRight, UserX, MessageSquare, Pencil, Trash2 } from 'lucide-react'
@@ -88,8 +89,42 @@ export default function StudentsPage() {
     }
   })
 
+  const [queueOpen, setQueueOpen] = useState(false)
+  const [queueItems, setQueueItems] = useState<{ id: string, name: string, phone: string, message: string }[]>([])
+
+  const handleBulkWhatsApp = () => {
+    const items: { id: string, name: string, phone: string, message: string }[] = []
+    selected.forEach(id => {
+      const student = data?.students?.find((s: any) => s.id === id)
+      if (student) {
+        let amount = student.monthlyFee ?? 1500
+        const latestFee = student.feeRecords?.[0]
+        if (latestFee && (latestFee.status === 'PENDING' || latestFee.status === 'PARTIAL')) {
+          amount = latestFee.amount - latestFee.paidAmount
+        }
+        const msg = buildReminderMessage(
+          student.name, 
+          amount, 
+          'this month', 
+          new Date(),
+          settings?.name,
+          settings?.phone
+        )
+        items.push({ id: student.id, name: student.name, phone: student.phone, message: msg })
+      }
+    })
+    setQueueItems(items)
+    setQueueOpen(true)
+  }
+
   return (
     <AppLayout title="Students">
+      <WhatsAppQueueModal 
+        isOpen={queueOpen} 
+        onClose={() => setQueueOpen(false)} 
+        items={queueItems} 
+      />
+
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         {/* Search */}
         <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 flex-1 max-w-sm">
@@ -117,27 +152,7 @@ export default function StudentsPage() {
       {selected.length > 0 && (
         <div className="mb-3 flex items-center gap-3 px-4 py-2.5 bg-brand-50 border border-brand-200 rounded-xl text-sm text-brand-700">
           <span>{selected.length} selected</span>
-          <button className="flex items-center gap-1.5 px-3 py-1 bg-brand-300 text-gray-900 rounded-lg text-xs font-medium hover:bg-brand-400" onClick={() => {
-            selected.forEach(id => {
-              const student = data?.students?.find((s: any) => s.id === id)
-              if (student) {
-                let amount = student.monthlyFee ?? 1500
-                const latestFee = student.feeRecords?.[0]
-                if (latestFee && (latestFee.status === 'PENDING' || latestFee.status === 'PARTIAL')) {
-                  amount = latestFee.amount - latestFee.paidAmount
-                }
-                const msg = buildReminderMessage(
-                  student.name, 
-                  amount, 
-                  'this month', 
-                  new Date(),
-                  settings?.name,
-                  settings?.phone
-                )
-                window.open(buildWhatsAppLink(student.phone, msg), '_blank')
-              }
-            })
-          }}>
+          <button className="flex items-center gap-1.5 px-3 py-1 bg-brand-300 text-gray-900 rounded-lg text-xs font-medium hover:bg-brand-400" onClick={handleBulkWhatsApp}>
             <MessageSquare size={12} /> Send WhatsApp
           </button>
           <button className="flex items-center gap-1.5 px-3 py-1 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100" onClick={() => setSelected([])}>

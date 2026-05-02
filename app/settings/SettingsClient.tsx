@@ -10,25 +10,37 @@ import { toast } from 'sonner'
 import { KeyRound, Users, Download, Building2, Loader2, Trash2 } from 'lucide-react'
 import { CLASS_OPTIONS } from '@/lib/constants/classes'
 
-const TABS = ['Institute Info', 'Change Password', 'Staff Users', 'Data Export']
+import { useSession } from 'next-auth/react'
+
+const ALL_TABS = ['Institute Info', 'Change Password', 'Staff Users', 'Data Export']
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState(0)
+  const { data: session } = useSession()
+  const isAdmin = (session?.user as any)?.role === 'ADMIN'
+  const [tab, setTab] = useState(isAdmin ? 0 : 1)
+
+  // Ensure staff don't get stuck on an invalid tab index
+  useEffect(() => {
+    if (!isAdmin && tab !== 1) setTab(1)
+  }, [isAdmin, tab])
 
   return (
     <AppLayout title="Settings">
       <div className="flex gap-1 mb-6 bg-white border border-gray-100 rounded-2xl p-1 w-fit shadow-sm overflow-x-auto">
-        {TABS.map((t, i) => (
-          <button key={t} onClick={() => setTab(i)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${tab === i ? 'bg-brand-300 text-gray-900 shadow' : 'text-gray-500 hover:text-gray-700'}`}>
-            {t}
-          </button>
-        ))}
+        {ALL_TABS.map((t, i) => {
+          if (!isAdmin && i !== 1) return null
+          return (
+            <button key={t} onClick={() => setTab(i)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${tab === i ? 'bg-brand-300 text-gray-900 shadow' : 'text-gray-500 hover:text-gray-700'}`}>
+              {t}
+            </button>
+          )
+        })}
       </div>
 
-      {tab === 0 && <InstituteInfo />}
+      {tab === 0 && isAdmin && <InstituteInfo />}
       {tab === 1 && <ChangePassword />}
-      {tab === 2 && <StaffUsers />}
-      {tab === 3 && <DataExport />}
+      {tab === 2 && isAdmin && <StaffUsers />}
+      {tab === 3 && isAdmin && <DataExport />}
     </AppLayout>
   )
 }

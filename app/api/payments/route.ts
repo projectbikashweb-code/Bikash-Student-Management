@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -69,11 +70,46 @@ export async function GET(req: NextRequest) {
     prisma.paymentHistory.count({ where }),
   ])
 
-  // Monthly summary
-  const monthly = await prisma.paymentHistory.groupBy({
-    by: ['paymentDate'],
-    _sum: { amountPaid: true },
-  })
+  // Proper Monthly Summary & Aggregations
+  const now = new Date()
+  const thisMonthStart = startOfMonth(now)
+  const thisMonthEnd = endOfMonth(now)
 
-  return NextResponse.json({ payments, total, pages: Math.ceil(total / limit) })
+  const [thisMonthAgg, modeAgg] = await Promise.all([
+    prisma.paymentHistory.aggregate({
+      _sum: { amountPaid: true },
+      where: { paymentDate: { gte: thisMonthStart, lte: thisMonthEnd } }
+    }),
+    prisma.paymentHistory.groupBy({
+      by: ['paymentMode'],
+      _sum: { amountPaid: true }
+    })
+  ])
+
+  const totalThisMonth = Number(thisMonthAgg._sum.amountPaid ?? 0)
+  const totalUPI = Number(modeAgg.find(m => m.paymentMode === 'UPI')?._sum.amountPaid ?? 0)
+  const totalCash = Number(modeAgg.find(m => m.paymentMode === 'CASH')?._sum.amountPaid ?? 0)
+
+  // Monthly chart data (last 6 months)
+  const monthlyData = []
+  for (let i = 5; i >= 0; i--) {
+    const d = subMonths(now, i)
+    const start = startOfMonth(d)
+    const end = endOfMonth(d)
+    const result = await prisma.paymentHistory.aggregate({
+      _sum: { amountPaid: true },
+      where: { paymentDate: { gte: start, lte: end } },
+    })
+    monthlyData.push({
+      month: format(d, 'MMM yy'),
+      amount: Number(result._sum.amountPaid ?? 0),
+    })
+  }
+
+  return NextResponse.json({ 
+    payments, 
+    total, 
+    pages: Math.ceil(total / limit),
+    summary: { totalThisMonth, totalUPI, totalCash, monthlyData }
+  })
 }

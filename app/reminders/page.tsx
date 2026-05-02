@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { TableSkeleton } from '@/components/shared/SkeletonLoader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { WhatsAppQueueModal } from '@/components/shared/WhatsAppQueueModal'
 import { formatCurrency, formatDate, buildWhatsAppLink, buildReminderMessage } from '@/lib/utils'
 import { toast } from 'sonner'
 import { MessageSquare, Send, CheckSquare, Square } from 'lucide-react'
@@ -28,10 +29,12 @@ export default function RemindersPage() {
   })
 
   // Set the dynamic template once settings load
-  if (settings && !templateLoaded) {
-    setTemplate(`Dear [Student Name]'s parent, your tuition fee of ₹[Amount] for [Month] at ${settings.name} is due on [Due Date]. Please pay at the earliest. Contact: ${settings.phone}. Thank you.`)
-    setTemplateLoaded(true)
-  }
+  useEffect(() => {
+    if (settings && !templateLoaded) {
+      setTemplate(`Dear [Student Name]'s parent, your tuition fee of ₹[Amount] for [Month] at ${settings.name} is due on [Due Date]. Please pay at the earliest. Contact: ${settings.phone}. Thank you.`)
+      setTemplateLoaded(true)
+    }
+  }, [settings, templateLoaded])
 
   const { data: pendingFees, isLoading } = useQuery({
     queryKey: ['pending-fees-reminders'],
@@ -60,27 +63,37 @@ export default function RemindersPage() {
       .replace('[Due Date]', formatDate(fee.dueDate))
   }
 
+  const [queueOpen, setQueueOpen] = useState(false)
+  const [queueItems, setQueueItems] = useState<{ id: string, feeRecordId: string, name: string, phone: string, message: string }[]>([])
+
   const sendReminder = async (fee: any) => {
     const msg = buildMsg(fee)
     const link = buildWhatsAppLink(fee.student?.phone ?? '', msg)
     window.open(link, '_blank')
+    await handleLogReminder(fee.student?.id, fee.id, msg)
+  }
 
+  const handleLogReminder = async (studentId: string, feeRecordId: string, msg: string) => {
     await fetch('/api/reminders/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: fee.student?.id, feeRecordId: fee.id, message: msg, status: 'SENT' }),
+      body: JSON.stringify({ studentId, feeRecordId, message: msg, status: 'SENT' }),
     })
     qc.invalidateQueries({ queryKey: ['reminder-history'] })
-    toast.success(`Reminder opened for ${fee.student?.name}`)
+    toast.success('Reminder logged')
   }
 
-  const sendBulk = async () => {
+  const handleBulkWhatsApp = () => {
     const toSend = (pendingFees ?? []).filter((f: any) => selected.includes(f.id))
-    for (const fee of toSend) {
-      await sendReminder(fee)
-      await new Promise(r => setTimeout(r, 400))
-    }
-    setSelected([])
+    const items = toSend.map((fee: any) => ({
+      id: fee.student?.id,
+      feeRecordId: fee.id,
+      name: fee.student?.name,
+      phone: fee.student?.phone,
+      message: buildMsg(fee)
+    }))
+    setQueueItems(items)
+    setQueueOpen(true)
   }
 
   const toggleSelect = (id: string) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id])
@@ -88,6 +101,13 @@ export default function RemindersPage() {
 
   return (
     <AppLayout title="WhatsApp Reminders">
+      <WhatsAppQueueModal 
+        isOpen={queueOpen} 
+        onClose={() => setQueueOpen(false)} 
+        items={queueItems} 
+        onSend={(item: any) => handleLogReminder(item.id, item.feeRecordId, item.message)}
+      />
+
       <div className="flex gap-2 mb-5 border-b border-gray-200">
         {['Pending Fees', 'Reminder History'].map((t, i) => (
           <button key={t} onClick={() => setTab(i)} className={`px-4 py-2.5 text-sm font-medium transition-colors ${tab === i ? 'border-b-2 border-brand-300 text-gray-900 -mb-px' : 'text-gray-500 hover:text-gray-700'}`}>
@@ -114,7 +134,7 @@ export default function RemindersPage() {
           {selected.length > 0 && (
             <div className="mb-3 flex items-center gap-3 px-4 py-2.5 bg-green-50 border border-green-200 rounded-xl text-sm">
               <span className="text-green-700 font-medium">{selected.length} selected</span>
-              <button onClick={sendBulk} className="flex items-center gap-1.5 px-3 py-1 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700">
+              <button onClick={handleBulkWhatsApp} className="flex items-center gap-1.5 px-3 py-1 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700">
                 <Send size={12} /> Send All ({selected.length})
               </button>
               <button onClick={() => setSelected([])} className="text-xs text-green-600 hover:underline">Clear</button>

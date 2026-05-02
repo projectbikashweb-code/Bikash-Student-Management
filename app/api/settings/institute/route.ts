@@ -27,7 +27,9 @@ export async function GET() {
 // PUT — save updated institute settings
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session || (session.user as any)?.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const body = await req.json()
   const { name, address, phone, email, defaultFee, defaultDueDate, classFees } = body

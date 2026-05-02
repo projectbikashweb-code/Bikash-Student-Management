@@ -27,24 +27,14 @@ export default function PaymentsPage() {
     },
   })
 
-  // Compute summaries
+  // Fetch true summaries from backend
   const payments = data?.payments ?? []
-  const totalThisMonth = payments.filter((p: any) => {
-    const d = new Date(p.paymentDate)
-    const now = new Date()
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-  }).reduce((sum: number, p: any) => sum + Number(p.amountPaid), 0)
+  const totalThisMonth = data?.summary?.totalThisMonth ?? 0
+  const totalUPI = data?.summary?.totalUPI ?? 0
+  const totalCash = data?.summary?.totalCash ?? 0
 
-  const totalUPI = payments.filter((p: any) => p.paymentMode === 'UPI').reduce((sum: number, p: any) => sum + Number(p.amountPaid), 0)
-  const totalCash = payments.filter((p: any) => p.paymentMode === 'CASH').reduce((sum: number, p: any) => sum + Number(p.amountPaid), 0)
-
-  // Build monthly chart from payments
-  const monthMap: Record<string, number> = {}
-  payments.forEach((p: any) => {
-    const key = new Date(p.paymentDate).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
-    monthMap[key] = (monthMap[key] ?? 0) + Number(p.amountPaid)
-  })
-  const chartData = Object.entries(monthMap).map(([month, amount]) => ({ month, amount })).slice(-6)
+  // Build monthly chart from true backend aggregations
+  const chartData = data?.summary?.monthlyData ?? []
 
   const exportCSV = () => {
     window.open(`/api/payments?${params}&export=csv`, '_blank')
